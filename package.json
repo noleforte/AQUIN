@@ -5,6 +5,7 @@
   "main": "index.html",
   "scripts": {
     "dev": "echo 'Development server not needed'",
+    "build": "echo 'Build completed'",
     "start": "echo 'Static site - no start command needed'"
   },
   "keywords": [
