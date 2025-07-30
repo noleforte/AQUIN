@@ -1,6 +1,7 @@
 {
   "name": "ely-the-coin",
   "version": "1.0.0",
+  "type": "module",
   "description": "ELY The Coin - The most delightful water droplet in crypto",
   "main": "index.html",
   "scripts": {
