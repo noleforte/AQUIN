@@ -355,9 +355,7 @@
                         scrollToBottom();
 
                         try {
-                           const backendUrl = 'https://chat-ai-back-h9wn.onrender.com/chat';
-                           //'https://aichat-backend-79ip.onrender.com/chat'; //'http://localhost:4000/chat';
-                           const response = await fetch(backendUrl, {
+                           const response = await fetch('/api/chat', {
                               method: 'POST',
                               headers: { 'Content-Type': 'application/json' },
                               body: JSON.stringify({
@@ -365,14 +363,15 @@
                               })
                            });
 
-                           if (!response.ok)
-                              throw new Error(
-                                 `Server error: ${response.status}`
-                              );
+                           if (!response.ok) {
+                              throw new Error(`API error: ${response.status}`);
+                           }
 
                            const data = await response.json();
+                           const botReply = data.reply;
 
                            messagesDiv.removeChild(botTypingMessage);
+                           
                            const botMessage = document.createElement('div');
                            botMessage.className = 'message bot';
 
@@ -381,28 +380,33 @@
 
                            const botText = document.createElement('div');
                            botText.className = 'text bot-text';
-                           botText.textContent = data.reply || 'No answer';
+                           botText.textContent = botReply;
 
                            botMessage.appendChild(botAvatar);
                            botMessage.appendChild(botText);
                            messagesDiv.appendChild(botMessage);
 
                            chatHistory.push({
-                              message: data.reply,
+                              message: botReply,
                               isUser: false
                            });
                            saveChatHistory(chatHistory);
+                           scrollToBottom();
                         } catch (error) {
+                           console.error('Chat error:', error);
+                           
+                           messagesDiv.removeChild(botTypingMessage);
+                           
                            const errorMessage = document.createElement('div');
                            errorMessage.className = 'message bot';
-                           errorMessage.innerHTML =
-                              '<div class="text bot-text">Error sending</div>';
+                           errorMessage.innerHTML = '<div class="text bot-text">The connection feels heavy right now. Try again in a moment.</div>';
                            messagesDiv.appendChild(errorMessage);
-                           console.error('Error:', error);
+                           
+                           scrollToBottom();
                         }
-
-                        scrollToBottom();
                      };
+
+
 
                      const initialMessages = chatHistory.map((entry) => {
                         const messageDiv = document.createElement('div');
@@ -673,55 +677,75 @@
          'Will Ely succeed in creating his giant, invisible chain of joy? Can he navigate the complexities of crypto without accidentally flooding the entire system? Join the $ELY community and witness the most delightfully disruptive force in crypto.'
       ];
 
-      // Note: The slider functionality is commented out because the required elements don't exist in the HTML
-      // const dots = document.querySelectorAll('.dot');
-      // let currentIndex = 0;
-      // 
-      // function updateSlider(index) {
-      //    if (sliderText) {
-      //       sliderText.innerText = texts[index];
-      //    }
-      //    dots.forEach((dot) => dot.classList.remove('active'));
-      //    dots[index].classList.add('active');
-      // }
-      // 
-      // const arrowLeft = document.querySelector('.arrow_left');
-      // const arrowRight = document.querySelector('.arrow_right');
-      // 
-      // if (arrowLeft) {
-      //    arrowLeft.addEventListener('click', () => {
-      //       currentIndex =
-      //          currentIndex === 0 ? texts.length - 1 : currentIndex - 1;
-      //       updateSlider(currentIndex);
-      //    });
-      // }
-      // 
-      // if (arrowRight) {
-      //    arrowRight.addEventListener('click', () => {
-      //       currentIndex =
-      //          currentIndex === texts.length - 1 ? 0 : currentIndex + 1;
-      //       updateSlider(currentIndex);
-      //    });
-      // }
-      // 
-      // dots.forEach((dot) => {
-      //    dot.addEventListener('click', () => {
-      //       currentIndex = parseInt(dot.getAttribute('data-index'));
-      //       updateSlider(currentIndex);
-      //    });
-      // });
+      const dots = document.querySelectorAll('.dot');
+      let currentIndex = 0;
+
+      function updateSlider(index) {
+         if (sliderText) {
+            sliderText.innerText = texts[index];
+         }
+         dots.forEach((dot) => dot.classList.remove('active'));
+         dots[index].classList.add('active');
+      }
+
+      const arrowLeft = document.querySelector('.arrow_left');
+      const arrowRight = document.querySelector('.arrow_right');
+
+      if (arrowLeft) {
+         arrowLeft.addEventListener('click', () => {
+            currentIndex =
+               currentIndex === 0 ? texts.length - 1 : currentIndex - 1;
+            updateSlider(currentIndex);
+         });
+      }
+
+      if (arrowRight) {
+         arrowRight.addEventListener('click', () => {
+            currentIndex =
+               currentIndex === texts.length - 1 ? 0 : currentIndex + 1;
+            updateSlider(currentIndex);
+         });
+      }
+
+      dots.forEach((dot) => {
+         dot.addEventListener('click', () => {
+            currentIndex = parseInt(dot.getAttribute('data-index'));
+            updateSlider(currentIndex);
+         });
+      });
    });
 </script>
 
 <script>
    document.addEventListener('DOMContentLoaded', function() {
       window.addEventListener('scroll', function () {
-         const header = document.querySelector('header');
+         const comixScroll = document.querySelector('.moving_comix_scroll');
+         const comixContent = document.querySelector('.moving_comix_content');
 
-         if (header && window.scrollY > 150) {
-            header.classList.add('active');
-         } else if (header) {
-            header.classList.remove('active');
+         if (!comixScroll || !comixContent) return;
+
+         const scrollTop = window.scrollY;
+         const windowHeight = window.innerHeight;
+         const comixScrollTop =
+            comixScroll.getBoundingClientRect().top + scrollTop;
+         const comixHeight = comixScroll.offsetHeight;
+
+         if (
+            scrollTop + windowHeight > comixScrollTop &&
+            scrollTop < comixScrollTop + comixHeight
+         ) {
+            const scrollPercentage =
+               (scrollTop + windowHeight - comixScrollTop) /
+               (windowHeight + comixHeight);
+
+            const maxTranslate =
+               comixContent.scrollWidth - comixScroll.offsetWidth;
+            const translateX = Math.min(
+               maxTranslate,
+               maxTranslate * scrollPercentage
+            );
+
+            comixContent.style.transform = `translateX(-${translateX}px)`;
          }
       });
    });
