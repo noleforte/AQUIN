@@ -98,7 +98,6 @@
   @media screen and (max-width: 767px) {
     header {
       width: 100%;
-      position: sticky;
       top: 0;
       z-index: 1000;
       background: transparent;
@@ -172,7 +171,7 @@
     .sn_hero_content .hero_char {
       max-width: 40rem;
       width: 100%;
-      margin-top: -3rem;
+      margin-top: -1rem;
       -webkit-animation: hero_char 1s ease;
               animation: hero_char 1s ease;
     }
@@ -496,11 +495,12 @@
       height: 0.8rem;
     }
     .custom_slider .custom_slide .step {
-      height: 18rem;
-      width: 18rem;
+      height: 11rem !important;
+      width: 11rem !important;
       bottom: 0;
       gap: 0.8rem;
-      bottom: 0rem;
+      bottom: 1rem;
+      left: 25%;
     }
     
     .sn_social_content {
