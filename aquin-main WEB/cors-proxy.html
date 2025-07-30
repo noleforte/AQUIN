@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORS Proxy Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .response {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+            white-space: pre-wrap;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>CORS Proxy Test</h1>
+    
+    <div class="container">
+        <h2>Test Backend Connection</h2>
+        <div class="input-group">
+            <label for="url">Backend URL:</label>
+            <input type="text" id="url" value="https://chat-ai-back-h9wn.onrender.com/chat" />
+        </div>
+        <div class="input-group">
+            <label for="requestBody">Request Body (JSON):</label>
+            <textarea id="requestBody">{
+  "messages": [
+    {"message": "Hello", "isUser": true},
+    {"message": "Hi there!", "isUser": false}
+  ]
+}</textarea>
+        </div>
+        <button onclick="testConnection()">Test Connection</button>
+        <button onclick="testHealth()">Test Health Endpoint</button>
+        <div id="response" class="response"></div>
+    </div>
+
+    <div class="container">
+        <h2>Alternative Solutions</h2>
+        <h3>1. Use a CORS Proxy Service</h3>
+        <p>You can use a CORS proxy service to bypass CORS restrictions:</p>
+        <ul>
+            <li><strong>cors-anywhere:</strong> https://cors-anywhere.herokuapp.com/</li>
+            <li><strong>cors.io:</strong> https://cors.io/</li>
+            <li><strong>allorigins:</strong> https://api.allorigins.win/</li>
+        </ul>
+        
+        <h3>2. Update Frontend to Use Proxy</h3>
+        <p>Update your frontend fetch call to use a proxy:</p>
+        <pre><code>const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+const targetUrl = 'https://chat-ai-back-h9wn.onrender.com/chat';
+const response = await fetch(proxyUrl + targetUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messages: chatHistory.slice(-10) })
+});</code></pre>
+        
+        <h3>3. Deploy Backend with Proper CORS</h3>
+        <p>Ensure your backend deployment includes the updated CORS configuration.</p>
+    </div>
+
+    <script>
+        async function testConnection() {
+            const url = document.getElementById('url').value;
+            const requestBody = document.getElementById('requestBody').value;
+            const responseDiv = document.getElementById('response');
+            
+            try {
+                responseDiv.innerHTML = 'Testing connection...';
+                responseDiv.className = 'response';
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: requestBody
+                });
+                
+                const data = await response.json();
+                
+                responseDiv.innerHTML = `Status: ${response.status}\nHeaders: ${JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2)}\nResponse: ${JSON.stringify(data, null, 2)}`;
+                responseDiv.className = 'response success';
+            } catch (error) {
+                responseDiv.innerHTML = `Error: ${error.message}\n\nThis indicates a CORS issue. Try using one of the proxy solutions below.`;
+                responseDiv.className = 'response error';
+            }
+        }
+        
+        async function testHealth() {
+            const baseUrl = document.getElementById('url').value.replace('/chat', '');
+            const responseDiv = document.getElementById('response');
+            
+            try {
+                responseDiv.innerHTML = 'Testing health endpoint...';
+                responseDiv.className = 'response';
+                
+                const response = await fetch(baseUrl + '/health');
+                const data = await response.json();
+                
+                responseDiv.innerHTML = `Health Check Status: ${response.status}\nResponse: ${JSON.stringify(data, null, 2)}`;
+                responseDiv.className = 'response success';
+            } catch (error) {
+                responseDiv.innerHTML = `Health Check Error: ${error.message}`;
+                responseDiv.className = 'response error';
+            }
+        }
+        
+        // Test with proxy
+        async function testWithProxy() {
+            const targetUrl = 'https://chat-ai-back-h9wn.onrender.com/chat';
+            const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+            const responseDiv = document.getElementById('response');
+            
+            try {
+                responseDiv.innerHTML = 'Testing with CORS proxy...';
+                responseDiv.className = 'response';
+                
+                const response = await fetch(proxyUrl + targetUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        messages: [
+                            { message: 'Hello', isUser: true },
+                            { message: 'Hi there!', isUser: false }
+                        ]
+                    })
+                });
+                
+                const data = await response.json();
+                
+                responseDiv.innerHTML = `Proxy Test Status: ${response.status}\nResponse: ${JSON.stringify(data, null, 2)}`;
+                responseDiv.className = 'response success';
+            } catch (error) {
+                responseDiv.innerHTML = `Proxy Test Error: ${error.message}`;
+                responseDiv.className = 'response error';
+            }
+        }
+    </script>
+</body>
+</html> 

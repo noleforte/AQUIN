@@ -26,30 +26,40 @@ const allowedOrigins = [
    'http://127.0.0.1:5173'
 ];
 
-// Enable CORS for all routes
+// Enable CORS for all routes with more permissive settings
 app.use((req, res, next) => {
    const origin = req.headers.origin;
    
-   // Allow requests with no origin (like mobile apps or curl requests)
-   if (!origin) {
-      res.header('Access-Control-Allow-Origin', '*');
+   console.log('Request origin:', origin);
+   console.log('Request method:', req.method);
+   console.log('Request headers:', req.headers);
+   
+   // Always allow the specific domain
+   if (origin === 'https://ely-lemon.vercel.app') {
+      res.header('Access-Control-Allow-Origin', origin);
    } else if (
       origin.startsWith('http://localhost') ||
       origin.startsWith('http://127.0.0.1') ||
       allowedOrigins.includes(origin)
    ) {
       res.header('Access-Control-Allow-Origin', origin);
+   } else if (!origin) {
+      // Allow requests with no origin
+      res.header('Access-Control-Allow-Origin', '*');
    } else {
       console.log('Blocked origin:', origin);
-      return res.status(403).json({ error: 'Not allowed by CORS' });
+      // For now, allow all origins to debug the issue
+      res.header('Access-Control-Allow-Origin', origin);
    }
    
    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-   res.header('Access-Control-Allow-Headers', 'Content-Type, Accept, Authorization');
+   res.header('Access-Control-Allow-Headers', 'Content-Type, Accept, Authorization, Origin, X-Requested-With');
    res.header('Access-Control-Allow-Credentials', 'true');
+   res.header('Access-Control-Max-Age', '86400'); // 24 hours
    
    // Handle preflight requests
    if (req.method === 'OPTIONS') {
+      console.log('Handling OPTIONS request');
       res.status(200).end();
       return;
    }
