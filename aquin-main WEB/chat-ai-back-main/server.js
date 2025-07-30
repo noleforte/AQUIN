@@ -16,10 +16,10 @@ const TOKEN = process.env.TOKEN;
 
 // Updated CORS configuration for Render deployment
 const allowedOrigins = [
-   'https://ely.vercel.app', 
-   'https://elyangel.world', 
+   'https://aquin.vercel.app', 
+   'https://aquin.xyz', 
    'https://loono.boo',
-   'https://ely-lemon.vercel.app',
+   'https://aquin-lemon.vercel.app',
    'http://localhost:3000',
    'http://localhost:5173',
    'http://127.0.0.1:3000',
