@@ -26,28 +26,36 @@ const allowedOrigins = [
    'http://127.0.0.1:5173'
 ];
 
-app.use(
-   cors({
-      origin: (origin, callback) => {
-         // Allow requests with no origin (like mobile apps or curl requests)
-         if (!origin) return callback(null, true);
-         
-         if (
-            origin.startsWith('http://localhost') ||
-            origin.startsWith('http://127.0.0.1') ||
-            allowedOrigins.includes(origin)
-         ) {
-            callback(null, true);
-         } else {
-            console.log('Blocked origin:', origin);
-            callback(new Error('Not allowed by CORS'));
-         }
-      },
-      methods: ['GET', 'POST', 'OPTIONS'],
-      credentials: true,
-      optionsSuccessStatus: 200
-   })
-);
+// Enable CORS for all routes
+app.use((req, res, next) => {
+   const origin = req.headers.origin;
+   
+   // Allow requests with no origin (like mobile apps or curl requests)
+   if (!origin) {
+      res.header('Access-Control-Allow-Origin', '*');
+   } else if (
+      origin.startsWith('http://localhost') ||
+      origin.startsWith('http://127.0.0.1') ||
+      allowedOrigins.includes(origin)
+   ) {
+      res.header('Access-Control-Allow-Origin', origin);
+   } else {
+      console.log('Blocked origin:', origin);
+      return res.status(403).json({ error: 'Not allowed by CORS' });
+   }
+   
+   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+   res.header('Access-Control-Allow-Headers', 'Content-Type, Accept, Authorization');
+   res.header('Access-Control-Allow-Credentials', 'true');
+   
+   // Handle preflight requests
+   if (req.method === 'OPTIONS') {
+      res.status(200).end();
+      return;
+   }
+   
+   next();
+});
 
 app.use(bodyParser.json());
 
@@ -67,9 +75,13 @@ app.use('/chat', limiter);
 
 app.post('/chat', async (req, res) => {
    try {
+      console.log('Received chat request from:', req.headers.origin);
+      console.log('Request body:', req.body);
+      
       const { messages } = req.body;
       
       if (!messages || !Array.isArray(messages)) {
+         console.error('Invalid messages format:', messages);
          return res.status(400).json({ error: 'Invalid messages format' });
       }
 
@@ -169,14 +181,21 @@ app.post('/chat', async (req, res) => {
          );
 
          const botReply = response.data.choices[0].message.content.trim();
+         console.log('OpenAI response:', botReply);
          res.json({ reply: botReply });
       } catch (error) {
-         console.error('Error fetching from OpenAI:', error);
-         res.status(500).json({ error: 'Ошибка при отправке запроса' });
+         console.error('Error fetching from OpenAI:', error.response?.data || error.message);
+         res.status(500).json({ 
+            error: 'Error processing request',
+            details: error.response?.data?.error?.message || error.message 
+         });
       }
    } catch (error) {
       console.error('Server error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ 
+         error: 'Internal server error',
+         details: error.message 
+      });
    }
 });
 

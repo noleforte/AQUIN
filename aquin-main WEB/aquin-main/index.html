@@ -290,13 +290,14 @@
                </style>
 
                <script>
-                  document
-                     .getElementById('user-input')
-                     .addEventListener('keypress', function (event) {
+                  const userInput = document.getElementById('user-input');
+                  if (userInput) {
+                     userInput.addEventListener('keypress', function (event) {
                         if (event.key === 'Enter') {
                            sendMessage();
                         }
                      });
+                  }
 
                   let chatHistory =
                      JSON.parse(sessionStorage.getItem('chatHistory')) || [];
@@ -310,7 +311,9 @@
 
                   const scrollToBottom = () => {
                      const messagesDiv = document.getElementById('messages');
-                     messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                     if (messagesDiv) {
+                        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                     }
                   };
 
                   async function sendMessage() {
@@ -319,6 +322,11 @@
                      if (!userInput.trim()) return;
 
                      const messagesDiv = document.getElementById('messages');
+                     if (!messagesDiv) {
+                        console.error('Messages div not found');
+                        return;
+                     }
+                     
                      const userMessage = document.createElement('div');
                      userMessage.className = 'message user';
 
@@ -352,16 +360,23 @@
                         //'https://aichat-backend-79ip.onrender.com/chat'; //'http://localhost:4000/chat';
                         const response = await fetch(backendUrl, {
                            method: 'POST',
-                           headers: { 'Content-Type': 'application/json' },
+                           headers: { 
+                              'Content-Type': 'application/json',
+                              'Accept': 'application/json'
+                           },
+                           mode: 'cors',
                            body: JSON.stringify({
                               messages: chatHistory.slice(-10)
                            })
                         });
 
-                        if (!response.ok)
+                        if (!response.ok) {
+                           console.error('Response status:', response.status);
+                           console.error('Response headers:', response.headers);
                            throw new Error(
-                              `Server error: ${response.status}`
+                              `Server error: ${response.status} - ${response.statusText}`
                            );
+                        }
 
                         const data = await response.json();
 
@@ -386,12 +401,21 @@
                         });
                         saveChatHistory(chatHistory);
                      } catch (error) {
+                        console.error('Fetch error details:', error);
+                        
                         const errorMessage = document.createElement('div');
                         errorMessage.className = 'message bot';
-                        errorMessage.innerHTML =
-                           '<div class="text bot-text">Error sending</div>';
+                        
+                        let errorText = 'Sorry, I\'m having trouble connecting right now. Please try again later.';
+                        
+                        if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
+                           errorText = 'Connection error. Please check your internet connection and try again.';
+                        } else if (error.message.includes('Server error')) {
+                           errorText = 'Server is temporarily unavailable. Please try again in a moment.';
+                        }
+                        
+                        errorMessage.innerHTML = `<div class="text bot-text">${errorText}</div>`;
                         messagesDiv.appendChild(errorMessage);
-                        console.error('Error:', error);
                      }
 
                      scrollToBottom();
@@ -432,9 +456,11 @@
                   });
 
                   const messagesDiv = document.getElementById('messages');
-                  initialMessages.forEach((msg) =>
-                     messagesDiv.appendChild(msg)
-                  );
+                  if (messagesDiv) {
+                     initialMessages.forEach((msg) =>
+                        messagesDiv.appendChild(msg)
+                     );
+                  }
 
                   scrollToBottom();
                </script>
@@ -672,17 +698,24 @@
       dots[index].classList.add('active');
    }
 
-   document.querySelector('.arrow_left').addEventListener('click', () => {
-      currentIndex =
-         currentIndex === 0 ? texts.length - 1 : currentIndex - 1;
-      updateSlider(currentIndex);
-   });
+   const arrowLeft = document.querySelector('.arrow_left');
+   const arrowRight = document.querySelector('.arrow_right');
+   
+   if (arrowLeft) {
+      arrowLeft.addEventListener('click', () => {
+         currentIndex =
+            currentIndex === 0 ? texts.length - 1 : currentIndex - 1;
+         updateSlider(currentIndex);
+      });
+   }
 
-   document.querySelector('.arrow_right').addEventListener('click', () => {
-      currentIndex =
-         currentIndex === texts.length - 1 ? 0 : currentIndex + 1;
-      updateSlider(currentIndex);
-   });
+   if (arrowRight) {
+      arrowRight.addEventListener('click', () => {
+         currentIndex =
+            currentIndex === texts.length - 1 ? 0 : currentIndex + 1;
+         updateSlider(currentIndex);
+      });
+   }
 
    dots.forEach((dot) => {
       dot.addEventListener('click', () => {
@@ -696,6 +729,8 @@
    window.addEventListener('scroll', function () {
       const comixScroll = document.querySelector('.moving_comix_scroll');
       const comixContent = document.querySelector('.moving_comix_content');
+
+      if (!comixScroll || !comixContent) return;
 
       const scrollTop = window.scrollY;
       const windowHeight = window.innerHeight;
@@ -724,9 +759,9 @@
 </script>
 
 <script>
-   document
-      .getElementById('CopyButton')
-      .addEventListener('click', function () {
+   const copyButton = document.getElementById('CopyButton');
+   if (copyButton) {
+      copyButton.addEventListener('click', function () {
          const copyText = document.getElementById('CopyText').innerText;
 
          navigator.clipboard
@@ -744,6 +779,7 @@
                console.error('Error when copying text', error);
             });
       });
+   }
 </script>
 
 <script>
