@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backend Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+    </style>
+</head>
+<body>
+    <h1>Backend Connection Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Health Check</h2>
+        <p>Test if the backend server is running and responding.</p>
+        <button onclick="testHealth()">Test Health Endpoint</button>
+        <div id="health-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Direct Chat Test</h2>
+        <p>Test direct connection to the chat endpoint (will likely fail due to CORS).</p>
+        <button onclick="testDirectChat()">Test Direct Chat</button>
+        <div id="direct-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. CORS Proxy Test</h2>
+        <p>Test using a CORS proxy to bypass restrictions.</p>
+        <button onclick="testProxyChat()">Test Proxy Chat</button>
+        <div id="proxy-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Vercel API Test</h2>
+        <p>Test using a Vercel API function (if deployed).</p>
+        <button onclick="testVercelAPI()">Test Vercel API</button>
+        <div id="vercel-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Diagnostic Information</h2>
+        <div id="diagnostic" class="result"></div>
+    </div>
+
+    <script>
+        function showResult(elementId, message, type = '') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `result ${type}`;
+        }
+        
+        async function testHealth() {
+            const resultDiv = document.getElementById('health-result');
+            resultDiv.textContent = 'Testing...';
+            
+            try {
+                const response = await fetch('https://chat-ai-back-h9wn.onrender.com/health');
+                const data = await response.json();
+                
+                showResult('health-result', 
+                    `✅ Health Check SUCCESS\nStatus: ${response.status}\nResponse: ${JSON.stringify(data, null, 2)}`, 
+                    'success'
+                );
+            } catch (error) {
+                showResult('health-result', 
+                    `❌ Health Check FAILED\nError: ${error.message}\n\nThis means the backend server is not accessible.`, 
+                    'error'
+                );
+            }
+        }
+        
+        async function testDirectChat() {
+            const resultDiv = document.getElementById('direct-result');
+            resultDiv.textContent = 'Testing...';
+            
+            try {
+                const response = await fetch('https://chat-ai-back-h9wn.onrender.com/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        messages: [
+                            { message: 'Hello', isUser: true },
+                            { message: 'Hi there!', isUser: false }
+                        ]
+                    })
+                });
+                
+                const data = await response.json();
+                
+                showResult('direct-result', 
+                    `✅ Direct Chat SUCCESS\nStatus: ${response.status}\nResponse: ${JSON.stringify(data, null, 2)}`, 
+                    'success'
+                );
+            } catch (error) {
+                showResult('direct-result', 
+                    `❌ Direct Chat FAILED\nError: ${error.message}\n\nThis is expected due to CORS restrictions.`, 
+                    'error'
+                );
+            }
+        }
+        
+        async function testProxyChat() {
+            const resultDiv = document.getElementById('proxy-result');
+            resultDiv.textContent = 'Testing...';
+            
+            try {
+                const proxyUrl = 'https://api.allorigins.win/raw?url=';
+                const targetUrl = 'https://chat-ai-back-h9wn.onrender.com/chat';
+                const fullUrl = proxyUrl + encodeURIComponent(targetUrl);
+                
+                const response = await fetch(fullUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        messages: [
+                            { message: 'Hello', isUser: true },
+                            { message: 'Hi there!', isUser: false }
+                        ]
+                    })
+                });
+                
+                const data = await response.json();
+                
+                showResult('proxy-result', 
+                    `✅ Proxy Chat SUCCESS\nStatus: ${response.status}\nResponse: ${JSON.stringify(data, null, 2)}`, 
+                    'success'
+                );
+            } catch (error) {
+                showResult('proxy-result', 
+                    `❌ Proxy Chat FAILED\nError: ${error.message}\n\nProxy services may be unreliable.`, 
+                    'error'
+                );
+            }
+        }
+        
+        async function testVercelAPI() {
+            const resultDiv = document.getElementById('vercel-result');
+            resultDiv.textContent = 'Testing...';
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        messages: [
+                            { message: 'Hello', isUser: true },
+                            { message: 'Hi there!', isUser: false }
+                        ]
+                    })
+                });
+                
+                const data = await response.json();
+                
+                showResult('vercel-result', 
+                    `✅ Vercel API SUCCESS\nStatus: ${response.status}\nResponse: ${JSON.stringify(data, null, 2)}`, 
+                    'success'
+                );
+            } catch (error) {
+                showResult('vercel-result', 
+                    `❌ Vercel API FAILED\nError: ${error.message}\n\nThis means the Vercel API function is not deployed or not accessible.`, 
+                    'error'
+                );
+            }
+        }
+        
+        // Run diagnostic on page load
+        window.addEventListener('load', function() {
+            const diagnostic = document.getElementById('diagnostic');
+            const info = {
+                'User Agent': navigator.userAgent,
+                'Current URL': window.location.href,
+                'Protocol': window.location.protocol,
+                'Host': window.location.host,
+                'Path': window.location.pathname,
+                'Timestamp': new Date().toISOString()
+            };
+            
+            diagnostic.textContent = 'Diagnostic Information:\n' + 
+                Object.entries(info).map(([key, value]) => `${key}: ${value}`).join('\n');
+        });
+    </script>
+</body>
+</html> 

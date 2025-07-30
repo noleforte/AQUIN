@@ -356,8 +356,18 @@
                      scrollToBottom();
 
                      try {
-                        // Use Vercel API route to avoid CORS issues
-                        const response = await fetch('/api/chat', {
+                        // Try local API server first, then Vercel API route
+                        let apiUrl = 'http://localhost:5501/api/chat';
+                        
+                        // Check if we're on localhost (development)
+                        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                           apiUrl = 'http://localhost:5501/api/chat';
+                        } else {
+                           // Production - use Vercel API route
+                           apiUrl = '/api/chat';
+                        }
+                        
+                        const response = await fetch(apiUrl, {
                            method: 'POST',
                            headers: { 
                               'Content-Type': 'application/json',

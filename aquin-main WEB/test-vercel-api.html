@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vercel API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-container {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .loading { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>Vercel API Test</h1>
+    
+    <div class="test-container">
+        <h2>Test ELY Chat API</h2>
+        <p>This will test the Vercel API function that connects directly to OpenAI.</p>
+        
+        <button onclick="testAPI()">Test API</button>
+        <button onclick="testWithMessage()">Test with "Hello"</button>
+        <button onclick="clearResults()">Clear Results</button>
+        
+        <div id="result" class="result"></div>
+    </div>
+
+    <div class="test-container">
+        <h2>Quick Chat Test</h2>
+        <input type="text" id="messageInput" placeholder="Type a message..." style="width: 70%; padding: 8px; margin-right: 10px;">
+        <button onclick="sendMessage()">Send</button>
+        <div id="chatResult" class="result"></div>
+    </div>
+
+    <script>
+        function showResult(message, type = '') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = message;
+            resultDiv.className = `result ${type}`;
+        }
+
+        function showChatResult(message, type = '') {
+            const resultDiv = document.getElementById('chatResult');
+            resultDiv.textContent = message;
+            resultDiv.className = `result ${type}`;
+        }
+
+        async function testAPI() {
+            showResult('Testing API...', 'loading');
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        messages: [
+                            { message: 'Hello ELY', isUser: true },
+                            { message: 'Hi there! How are you today?', isUser: false }
+                        ]
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const data = await response.json();
+                
+                showResult(`✅ API Test SUCCESS\n\nStatus: ${response.status}\nResponse: ${JSON.stringify(data, null, 2)}`, 'success');
+            } catch (error) {
+                showResult(`❌ API Test FAILED\n\nError: ${error.message}\n\nThis could mean:\n- API function is not deployed\n- OpenAI API key is not configured\n- There's a network issue`, 'error');
+            }
+        }
+
+        async function testWithMessage() {
+            showResult('Testing with "Hello"...', 'loading');
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        messages: [
+                            { message: 'Hello', isUser: true }
+                        ]
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const data = await response.json();
+                
+                showResult(`✅ Test with "Hello" SUCCESS\n\nELY's response: "${data.reply}"`, 'success');
+            } catch (error) {
+                showResult(`❌ Test with "Hello" FAILED\n\nError: ${error.message}`, 'error');
+            }
+        }
+
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (!message) {
+                showChatResult('Please enter a message first.', 'error');
+                return;
+            }
+
+            showChatResult('Sending message...', 'loading');
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        messages: [
+                            { message: message, isUser: true }
+                        ]
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const data = await response.json();
+                
+                showChatResult(`You: ${message}\n\nELY: ${data.reply}`, 'success');
+                messageInput.value = '';
+            } catch (error) {
+                showChatResult(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        function clearResults() {
+            document.getElementById('result').textContent = '';
+            document.getElementById('chatResult').textContent = '';
+        }
+
+        // Allow Enter key to send message
+        document.getElementById('messageInput').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html> 
