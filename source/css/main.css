@@ -775,7 +775,7 @@ header.active {
 }
 .sn_about_content::after {
    content: '';
-   background: url(../img/FIGHT.png);
+   background: url(../img/pic_3.png);
    background-size: contain;
    background-position: right bottom;
    background-repeat: no-repeat;
@@ -1525,7 +1525,7 @@ header.active {
    content: '';
    width: 40rem;
    height: 100%;
-   background: url(../img/Faq_Aqua.png);
+   background: url(../img/pic_6.png);
    background-size: contain;
    background-position: bottom;
    position: absolute;
