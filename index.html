@@ -290,44 +290,119 @@
                </style>
 
                <script>
-                  document.addEventListener('DOMContentLoaded', function() {
-                     const userInput = document.getElementById('user-input');
-                     if (userInput) {
-                        userInput.addEventListener('keypress', function (event) {
-                           if (event.key === 'Enter') {
-                              sendMessage();
-                           }
+                  document
+                     .getElementById('user-input')
+                     .addEventListener('keypress', function (event) {
+                        if (event.key === 'Enter') {
+                           sendMessage();
+                        }
+                     });
+
+                  let chatHistory =
+                     JSON.parse(sessionStorage.getItem('chatHistory')) || [];
+
+                  const saveChatHistory = (newHistory) => {
+                     sessionStorage.setItem(
+                        'chatHistory',
+                        JSON.stringify(newHistory)
+                     );
+                  };
+
+                  const scrollToBottom = () => {
+                     const messagesDiv = document.getElementById('messages');
+                     messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                  };
+
+                  async function sendMessage() {
+                     const userInput =
+                        document.getElementById('user-input').value;
+                     if (!userInput.trim()) return;
+
+                     const messagesDiv = document.getElementById('messages');
+                     const userMessage = document.createElement('div');
+                     userMessage.className = 'message user';
+
+                     const userAvatar = document.createElement('div');
+                     userAvatar.className = 'avatar user-avatar';
+                     userAvatar.textContent = 'U';
+
+                     const userText = document.createElement('div');
+                     userText.className = 'text user-text';
+                     userText.textContent = userInput;
+
+                     userMessage.appendChild(userText);
+                     userMessage.appendChild(userAvatar);
+                     messagesDiv.appendChild(userMessage);
+
+                     document.getElementById('user-input').value = '';
+
+                     chatHistory.push({ message: userInput, isUser: true });
+                     saveChatHistory(chatHistory);
+
+                     const botTypingMessage = document.createElement('div');
+                     botTypingMessage.className = 'message bot';
+                     botTypingMessage.innerHTML =
+                        '<div class="text bot-text">ELY is typing...</div>';
+                     messagesDiv.appendChild(botTypingMessage);
+
+                     scrollToBottom();
+
+                     try {
+                        const backendUrl = 'https://chat-ai-back-h9wn.onrender.com/chat';
+                        //'https://aichat-backend-79ip.onrender.com/chat'; //'http://localhost:4000/chat';
+                        const response = await fetch(backendUrl, {
+                           method: 'POST',
+                           headers: { 'Content-Type': 'application/json' },
+                           body: JSON.stringify({
+                              messages: chatHistory.slice(-10)
+                           })
                         });
+
+                        if (!response.ok)
+                           throw new Error(
+                              `Server error: ${response.status}`
+                           );
+
+                        const data = await response.json();
+
+                        messagesDiv.removeChild(botTypingMessage);
+                        const botMessage = document.createElement('div');
+                        botMessage.className = 'message bot';
+
+                        const botAvatar = document.createElement('div');
+                        botAvatar.className = 'avatar bot-avatar';
+
+                        const botText = document.createElement('div');
+                        botText.className = 'text bot-text';
+                        botText.textContent = data.reply || 'No answer';
+
+                        botMessage.appendChild(botAvatar);
+                        botMessage.appendChild(botText);
+                        messagesDiv.appendChild(botMessage);
+
+                        chatHistory.push({
+                           message: data.reply,
+                           isUser: false
+                        });
+                        saveChatHistory(chatHistory);
+                     } catch (error) {
+                        const errorMessage = document.createElement('div');
+                        errorMessage.className = 'message bot';
+                        errorMessage.innerHTML =
+                           '<div class="text bot-text">Error sending</div>';
+                        messagesDiv.appendChild(errorMessage);
+                        console.error('Error:', error);
                      }
 
-                     let chatHistory =
-                        JSON.parse(sessionStorage.getItem('chatHistory')) || [];
+                     scrollToBottom();
+                  }
 
-                     const saveChatHistory = (newHistory) => {
-                        sessionStorage.setItem(
-                           'chatHistory',
-                           JSON.stringify(newHistory)
-                        );
-                     };
+                  const initialMessages = chatHistory.map((entry) => {
+                     const messageDiv = document.createElement('div');
+                     messageDiv.className = 'message';
 
-                     const scrollToBottom = () => {
-                        const messagesDiv = document.getElementById('messages');
-                        if (messagesDiv) {
-                           messagesDiv.scrollTop = messagesDiv.scrollHeight;
-                        }
-                     };
-
-                     window.sendMessage = async function() {
-                        const userInput = document.getElementById('user-input');
-                        if (!userInput || !userInput.value.trim()) return;
-
-                        const userInputValue = userInput.value;
-                        const messagesDiv = document.getElementById('messages');
-                        
-                        if (!messagesDiv) return;
-
-                        const userMessage = document.createElement('div');
-                        userMessage.className = 'message user';
+                     if (entry.isUser) {
+                        messageDiv.classList.add('user');
 
                         const userAvatar = document.createElement('div');
                         userAvatar.className = 'avatar user-avatar';
@@ -335,121 +410,33 @@
 
                         const userText = document.createElement('div');
                         userText.className = 'text user-text';
-                        userText.textContent = userInputValue;
+                        userText.textContent = entry.message;
 
-                        userMessage.appendChild(userText);
-                        userMessage.appendChild(userAvatar);
-                        messagesDiv.appendChild(userMessage);
+                        messageDiv.appendChild(userText);
+                        messageDiv.appendChild(userAvatar);
+                     } else {
+                        messageDiv.classList.add('bot');
 
-                        userInput.value = '';
+                        const botAvatar = document.createElement('div');
+                        botAvatar.className = 'avatar bot-avatar';
 
-                        chatHistory.push({ message: userInputValue, isUser: true });
-                        saveChatHistory(chatHistory);
+                        const botText = document.createElement('div');
+                        botText.className = 'text bot-text';
+                        botText.textContent = entry.message;
 
-                        const botTypingMessage = document.createElement('div');
-                        botTypingMessage.className = 'message bot';
-                        botTypingMessage.innerHTML =
-                           '<div class="text bot-text">ELY is typing...</div>';
-                        messagesDiv.appendChild(botTypingMessage);
-
-                        scrollToBottom();
-
-                        try {
-                           const response = await fetch('/api/chat', {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({
-                                 messages: chatHistory.slice(-10)
-                              })
-                           });
-
-                           if (!response.ok) {
-                              throw new Error(`API error: ${response.status}`);
-                           }
-
-                           const data = await response.json();
-                           const botReply = data.reply;
-
-                           messagesDiv.removeChild(botTypingMessage);
-                           
-                           const botMessage = document.createElement('div');
-                           botMessage.className = 'message bot';
-
-                           const botAvatar = document.createElement('div');
-                           botAvatar.className = 'avatar bot-avatar';
-
-                           const botText = document.createElement('div');
-                           botText.className = 'text bot-text';
-                           botText.textContent = botReply;
-
-                           botMessage.appendChild(botAvatar);
-                           botMessage.appendChild(botText);
-                           messagesDiv.appendChild(botMessage);
-
-                           chatHistory.push({
-                              message: botReply,
-                              isUser: false
-                           });
-                           saveChatHistory(chatHistory);
-                           scrollToBottom();
-                        } catch (error) {
-                           console.error('Chat error:', error);
-                           
-                           messagesDiv.removeChild(botTypingMessage);
-                           
-                           const errorMessage = document.createElement('div');
-                           errorMessage.className = 'message bot';
-                           errorMessage.innerHTML = '<div class="text bot-text">The connection feels heavy right now. Try again in a moment.</div>';
-                           messagesDiv.appendChild(errorMessage);
-                           
-                           scrollToBottom();
-                        }
-                     };
-
-
-
-                     const initialMessages = chatHistory.map((entry) => {
-                        const messageDiv = document.createElement('div');
-                        messageDiv.className = 'message';
-
-                        if (entry.isUser) {
-                           messageDiv.classList.add('user');
-
-                           const userAvatar = document.createElement('div');
-                           userAvatar.className = 'avatar user-avatar';
-                           userAvatar.textContent = 'U';
-
-                           const userText = document.createElement('div');
-                           userText.className = 'text user-text';
-                           userText.textContent = entry.message;
-
-                           messageDiv.appendChild(userText);
-                           messageDiv.appendChild(userAvatar);
-                        } else {
-                           messageDiv.classList.add('bot');
-
-                           const botAvatar = document.createElement('div');
-                           botAvatar.className = 'avatar bot-avatar';
-
-                           const botText = document.createElement('div');
-                           botText.className = 'text bot-text';
-                           botText.textContent = entry.message;
-
-                           messageDiv.appendChild(botAvatar);
-                           messageDiv.appendChild(botText);
-                        }
-
-                        return messageDiv;
-                     });
-
-                     const messagesDiv = document.getElementById('messages');
-                     if (messagesDiv) {
-                        initialMessages.forEach((msg) =>
-                           messagesDiv.appendChild(msg)
-                        );
-                        scrollToBottom();
+                        messageDiv.appendChild(botAvatar);
+                        messageDiv.appendChild(botText);
                      }
+
+                     return messageDiv;
                   });
+
+                  const messagesDiv = document.getElementById('messages');
+                  initialMessages.forEach((msg) =>
+                     messagesDiv.appendChild(msg)
+                  );
+
+                  scrollToBottom();
                </script>
                <!-- <h2 class="scroll_effect">Liqui, the first chaos agent with a heart of gold and a mind full of ripples.</h2>
                     <p class="scroll_effect">LIQUI is not just any crypto mascot. He’s a powerful droplet of laughter, merging financial savvy with a whimsical charm that makes waves. <br><br> Join our lovable troublemaker on his mission
@@ -664,177 +651,155 @@
 </body>
 
 <script>
-   document.addEventListener('DOMContentLoaded', function() {
-      const sliderText = document.getElementById('SliderText');
-      const texts = [
-         'In the annals of crypto lore, few tales are as whimsical — or as consequential — as the Genesis of Ely. Our story begins not with a whitepaper, but with a serendipitous splash in the ocean of digital assets.',
-         'Ely, a brave young boy in the form of a water droplet, once stumbled upon a mysterious hardware wallet floating like a treasure among the streams of transactions. Mistaking this metallic gadget for a shiny pearl, he immediately absorbed it into himself. What followed was not confusion, but true innovation.',
-         'For seven days, Ely became an accidental oracle, his ripples sending waves throughout the blockchain. Each playful splash triggered a cascade of transactions, a random redistribution of digital wealth that made even the most avant-garde DeFi protocols blush.',
-         "Obscure altcoins splashed into long-dormant wallets. Smart contracts executed in patterns reminiscent of Aquintic dances. In one particularly absurd moment, a DAO accidentally voted to rename itself 'Aquin's Wondrous Water World.",
-         "This joyful chaos caught the attention of the enigmatic 'Crypto Spirits,' the supposed architects of digital serendipity. In Aquin's unpredictable splashes, they saw immense potential — a way to infuse a touch of magic into the sometimes dry world of cryptocurrency.",
-         "They anointed Ely as their agent of joyous disruption, giving him a mission both grand and absurd: to trigger 'The Aquinflow,' a prophesied event that would synchronize every blockchain in a harmonious wave of happiness.",
-         "And so, Ely set forth, armed with boundless enthusiasm and a hilariously inaccurate understanding of blockchain basics. His ability to 'splash'—spontaneously teleporting in bursts of excitement—often lands him in the right place at the wrong time, or the wrong place at the right time.",
-         'Will Ely succeed in creating his giant, invisible chain of joy? Can he navigate the complexities of crypto without accidentally flooding the entire system? Join the $ELY community and witness the most delightfully disruptive force in crypto.'
-      ];
+   const sliderText = document.getElementById('SliderText');
+   const texts = [
+      'In the annals of crypto lore, few tales are as whimsical — or as consequential — as the Genesis of Ely. Our story begins not with a whitepaper, but with a serendipitous splash in the ocean of digital assets.',
+      'Ely, a brave young boy in the form of a water droplet, once stumbled upon a mysterious hardware wallet floating like a treasure among the streams of transactions. Mistaking this metallic gadget for a shiny pearl, he immediately absorbed it into himself. What followed was not confusion, but true innovation.',
+      'For seven days, Ely became an accidental oracle, his ripples sending waves throughout the blockchain. Each playful splash triggered a cascade of transactions, a random redistribution of digital wealth that made even the most avant-garde DeFi protocols blush.',
+      "Obscure altcoins splashed into long-dormant wallets. Smart contracts executed in patterns reminiscent of Aquintic dances. In one particularly absurd moment, a DAO accidentally voted to rename itself 'Aquin’s Wondrous Water World.",
+      "This joyful chaos caught the attention of the enigmatic 'Crypto Spirits,' the supposed architects of digital serendipity. In Aquin’s unpredictable splashes, they saw immense potential — a way to infuse a touch of magic into the sometimes dry world of cryptocurrency.",
+      "They anointed Ely as their agent of joyous disruption, giving him a mission both grand and absurd: to trigger 'The Aquinflow,' a prophesied event that would synchronize every blockchain in a harmonious wave of happiness.",
+      "And so, Ely set forth, armed with boundless enthusiasm and a hilariously inaccurate understanding of blockchain basics. His ability to 'splash'—spontaneously teleporting in bursts of excitement—often lands him in the right place at the wrong time, or the wrong place at the right time.",
+      'Will Ely succeed in creating his giant, invisible chain of joy? Can he navigate the complexities of crypto without accidentally flooding the entire system? Join the $ELY community and witness the most delightfully disruptive force in crypto.'
+   ];
 
-      const dots = document.querySelectorAll('.dot');
-      let currentIndex = 0;
+   const dots = document.querySelectorAll('.dot');
+   let currentIndex = 0;
 
-      function updateSlider(index) {
-         if (sliderText) {
-            sliderText.innerText = texts[index];
-         }
-         dots.forEach((dot) => dot.classList.remove('active'));
-         dots[index].classList.add('active');
-      }
+   function updateSlider(index) {
+      sliderText.innerText = texts[index];
+      dots.forEach((dot) => dot.classList.remove('active'));
+      dots[index].classList.add('active');
+   }
 
-      const arrowLeft = document.querySelector('.arrow_left');
-      const arrowRight = document.querySelector('.arrow_right');
+   document.querySelector('.arrow_left').addEventListener('click', () => {
+      currentIndex =
+         currentIndex === 0 ? texts.length - 1 : currentIndex - 1;
+      updateSlider(currentIndex);
+   });
 
-      if (arrowLeft) {
-         arrowLeft.addEventListener('click', () => {
-            currentIndex =
-               currentIndex === 0 ? texts.length - 1 : currentIndex - 1;
-            updateSlider(currentIndex);
-         });
-      }
+   document.querySelector('.arrow_right').addEventListener('click', () => {
+      currentIndex =
+         currentIndex === texts.length - 1 ? 0 : currentIndex + 1;
+      updateSlider(currentIndex);
+   });
 
-      if (arrowRight) {
-         arrowRight.addEventListener('click', () => {
-            currentIndex =
-               currentIndex === texts.length - 1 ? 0 : currentIndex + 1;
-            updateSlider(currentIndex);
-         });
-      }
-
-      dots.forEach((dot) => {
-         dot.addEventListener('click', () => {
-            currentIndex = parseInt(dot.getAttribute('data-index'));
-            updateSlider(currentIndex);
-         });
+   dots.forEach((dot) => {
+      dot.addEventListener('click', () => {
+         currentIndex = parseInt(dot.getAttribute('data-index'));
+         updateSlider(currentIndex);
       });
    });
 </script>
 
 <script>
-   document.addEventListener('DOMContentLoaded', function() {
-      window.addEventListener('scroll', function () {
-         const comixScroll = document.querySelector('.moving_comix_scroll');
-         const comixContent = document.querySelector('.moving_comix_content');
+   window.addEventListener('scroll', function () {
+      const comixScroll = document.querySelector('.moving_comix_scroll');
+      const comixContent = document.querySelector('.moving_comix_content');
 
-         if (!comixScroll || !comixContent) return;
+      const scrollTop = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const comixScrollTop =
+         comixScroll.getBoundingClientRect().top + scrollTop;
+      const comixHeight = comixScroll.offsetHeight;
 
-         const scrollTop = window.scrollY;
-         const windowHeight = window.innerHeight;
-         const comixScrollTop =
-            comixScroll.getBoundingClientRect().top + scrollTop;
-         const comixHeight = comixScroll.offsetHeight;
+      if (
+         scrollTop + windowHeight > comixScrollTop &&
+         scrollTop < comixScrollTop + comixHeight
+      ) {
+         const scrollPercentage =
+            (scrollTop + windowHeight - comixScrollTop) /
+            (windowHeight + comixHeight);
 
-         if (
-            scrollTop + windowHeight > comixScrollTop &&
-            scrollTop < comixScrollTop + comixHeight
-         ) {
-            const scrollPercentage =
-               (scrollTop + windowHeight - comixScrollTop) /
-               (windowHeight + comixHeight);
+         const maxTranslate =
+            comixContent.scrollWidth - comixScroll.offsetWidth;
+         const translateX = Math.min(
+            maxTranslate,
+            maxTranslate * scrollPercentage
+         );
 
-            const maxTranslate =
-               comixContent.scrollWidth - comixScroll.offsetWidth;
-            const translateX = Math.min(
-               maxTranslate,
-               maxTranslate * scrollPercentage
-            );
-
-            comixContent.style.transform = `translateX(-${translateX}px)`;
-         }
-      });
-   });
-</script>
-
-<script>
-   document.addEventListener('DOMContentLoaded', function() {
-      const copyButton = document.getElementById('CopyButton');
-      if (copyButton) {
-         copyButton.addEventListener('click', function () {
-            const copyText = document.getElementById('CopyText').innerText;
-
-            navigator.clipboard
-               .writeText(copyText)
-               .then(function () {
-                  const copyButton = document.getElementById('CopyButton');
-
-                  copyButton.classList.add('active');
-
-                  setTimeout(function () {
-                     copyButton.classList.remove('active');
-                  }, 2000);
-               })
-               .catch(function (error) {
-                  console.error('Error when copying text', error);
-               });
-         });
+         comixContent.style.transform = `translateX(-${translateX}px)`;
       }
    });
 </script>
 
 <script>
-   document.addEventListener('DOMContentLoaded', function() {
-      let customCurrentIndex = 0;
-      const customSlides = document.querySelectorAll('.custom_slide');
-      const customDots = document.querySelectorAll('.custom_dot');
+   document
+      .getElementById('CopyButton')
+      .addEventListener('click', function () {
+         const copyText = document.getElementById('CopyText').innerText;
 
-      function showCustomSlide(index) {
-         customSlides.forEach((slide, i) => {
-            slide.classList.remove('active');
-            if (customDots[i]) {
-               customDots[i].classList.remove('active');
-            }
-         });
-         customSlides[index].classList.add('active');
-         if (customDots[index]) {
-            customDots[index].classList.add('active');
-         }
-      }
+         navigator.clipboard
+            .writeText(copyText)
+            .then(function () {
+               const copyButton = document.getElementById('CopyButton');
 
-      function nextCustomSlide() {
-         customCurrentIndex = (customCurrentIndex + 1) % customSlides.length;
-         showCustomSlide(customCurrentIndex);
-      }
+               copyButton.classList.add('active');
 
-      let customSlideInterval = setInterval(nextCustomSlide, 4000);
-
-      customDots.forEach((dot) => {
-         dot.addEventListener('click', function () {
-            clearInterval(customSlideInterval);
-
-            const index = parseInt(this.getAttribute('data-index'));
-            customCurrentIndex = index;
-            showCustomSlide(customCurrentIndex);
-
-            customSlideInterval = setInterval(nextCustomSlide, 5000);
-         });
-      });
-
-      showCustomSlide(customCurrentIndex);
-   });
-</script>
-
-<script>
-   document.addEventListener('DOMContentLoaded', function() {
-      document.querySelectorAll('.faq_btn').forEach((button) => {
-         button.addEventListener('click', () => {
-            const questionItem = button.closest('.question_item');
-
-            const isActive = questionItem.classList.contains('active');
-
-            document.querySelectorAll('.question_item').forEach((item) => {
-               item.classList.remove('active');
+               setTimeout(function () {
+                  copyButton.classList.remove('active');
+               }, 2000);
+            })
+            .catch(function (error) {
+               console.error('Error when copying text', error);
             });
+      });
+</script>
 
-            if (!isActive) {
-               questionItem.classList.add('active');
-            }
+<script>
+   let customCurrentIndex = 0;
+   const customSlides = document.querySelectorAll('.custom_slide');
+   const customDots = document.querySelectorAll('.custom_dot');
+
+   function showCustomSlide(index) {
+      customSlides.forEach((slide, i) => {
+         slide.classList.remove('active');
+         if (customDots[i]) {
+            customDots[i].classList.remove('active');
+         }
+      });
+      customSlides[index].classList.add('active');
+      if (customDots[index]) {
+         customDots[index].classList.add('active');
+      }
+   }
+
+   function nextCustomSlide() {
+      customCurrentIndex = (customCurrentIndex + 1) % customSlides.length;
+      showCustomSlide(customCurrentIndex);
+   }
+
+   let customSlideInterval = setInterval(nextCustomSlide, 4000);
+
+   customDots.forEach((dot) => {
+      dot.addEventListener('click', function () {
+         clearInterval(customSlideInterval);
+
+         const index = parseInt(this.getAttribute('data-index'));
+         customCurrentIndex = index;
+         showCustomSlide(customCurrentIndex);
+
+         customSlideInterval = setInterval(nextCustomSlide, 5000);
+      });
+   });
+
+   showCustomSlide(customCurrentIndex);
+</script>
+
+<script>
+   document.querySelectorAll('.faq_btn').forEach((button) => {
+      button.addEventListener('click', () => {
+         const questionItem = button.closest('.question_item');
+
+         const isActive = questionItem.classList.contains('active');
+
+         document.querySelectorAll('.question_item').forEach((item) => {
+            item.classList.remove('active');
          });
+
+         if (!isActive) {
+            questionItem.classList.add('active');
+         }
       });
    });
 </script>
@@ -871,38 +836,180 @@
       const mobileNav = document.querySelector('.mobile_navigation');
       const body = document.body;
 
-      if (menuButton && mobileNav) {
-         function toggleActive() {
-            menuButton.classList.toggle('active');
-            mobileNav.classList.toggle('active');
-            body.classList.toggle('lock_scroll');
-         }
-
-         menuButton.addEventListener('click', toggleActive);
-
-         mobileNav.querySelectorAll('a').forEach(function (link) {
-            link.addEventListener('click', function () {
-               menuButton.classList.remove('active');
-               mobileNav.classList.remove('active');
-               body.classList.remove('lock_scroll');
-            });
-         });
+      function toggleActive() {
+         menuButton.classList.toggle('active');
+         mobileNav.classList.toggle('active');
+         body.classList.toggle('lock_scroll');
       }
+
+      menuButton.addEventListener('click', toggleActive);
+
+      mobileNav.querySelectorAll('a').forEach(function (link) {
+         link.addEventListener('click', function () {
+            menuButton.classList.remove('active');
+            mobileNav.classList.remove('active');
+            body.classList.remove('lock_scroll');
+         });
+      });
    });
 </script>
 
 <script>
-   document.addEventListener('DOMContentLoaded', function() {
-      window.addEventListener('scroll', function () {
-         const header = document.querySelector('header');
+   window.addEventListener('scroll', function () {
+      const header = document.querySelector('header');
 
-         if (header && window.scrollY > 150) {
-            header.classList.add('active');
-         } else if (header) {
-            header.classList.remove('active');
+      if (window.scrollY > 150) {
+         header.classList.add('active');
+      } else {
+         header.classList.remove('active');
+      }
+   });
+</script>
+<script>
+   document
+      .getElementById('user-input')
+      .addEventListener('keypress', function (event) {
+         if (event.key === 'Enter') {
+            sendMessage();
          }
       });
+
+   let chatHistory =
+      JSON.parse(sessionStorage.getItem('chatHistory')) || [];
+
+   const saveChatHistory = (newHistory) => {
+      sessionStorage.setItem(
+         'chatHistory',
+         JSON.stringify(newHistory)
+      );
+   };
+
+   const scrollToBottom = () => {
+      const messagesDiv = document.getElementById('messages');
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+   };
+
+   async function sendMessage() {
+      const userInput =
+         document.getElementById('user-input').value;
+      if (!userInput.trim()) return;
+
+      const messagesDiv = document.getElementById('messages');
+      const userMessage = document.createElement('div');
+      userMessage.className = 'message user';
+
+      const userAvatar = document.createElement('div');
+      userAvatar.className = 'avatar user-avatar';
+      userAvatar.textContent = 'U';
+
+      const userText = document.createElement('div');
+      userText.className = 'text user-text';
+      userText.textContent = userInput;
+
+      userMessage.appendChild(userText);
+      userMessage.appendChild(userAvatar);
+      messagesDiv.appendChild(userMessage);
+
+      document.getElementById('user-input').value = '';
+
+      chatHistory.push({ message: userInput, isUser: true });
+      saveChatHistory(chatHistory);
+
+      const botTypingMessage = document.createElement('div');
+      botTypingMessage.className = 'message bot';
+      botTypingMessage.innerHTML =
+         '<div class="text bot-text">KURO is typing...</div>';
+      messagesDiv.appendChild(botTypingMessage);
+
+      scrollToBottom();
+
+      try {
+         const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messages: chatHistory.slice(-10) })
+         });
+
+         if (!response.ok)
+            throw new Error(
+               `Server error: ${response.status}`
+            );
+
+         const data = await response.json();
+         const reply = data.reply || 'No answer';
+
+         messagesDiv.removeChild(botTypingMessage);
+         const botMessage = document.createElement('div');
+         botMessage.className = 'message bot';
+
+         const botAvatar = document.createElement('div');
+         botAvatar.className = 'avatar bot-avatar';
+
+         const botText = document.createElement('div');
+         botText.className = 'text bot-text';
+         botText.textContent = reply;
+
+         botMessage.appendChild(botAvatar);
+         botMessage.appendChild(botText);
+         messagesDiv.appendChild(botMessage);
+
+         chatHistory.push({
+            message: reply,
+            isUser: false
+         });
+         saveChatHistory(chatHistory);
+      } catch (error) {
+         const errorMessage = document.createElement('div');
+         errorMessage.className = 'message bot';
+         errorMessage.innerHTML =
+            '<div class="text bot-text">Error sending</div>';
+         messagesDiv.appendChild(errorMessage);
+         console.error('Error:', error);
+      }
+
+      scrollToBottom();
+   }
+
+   const initialMessages = chatHistory.map((entry) => {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'message';
+
+      if (entry.isUser) {
+         messageDiv.classList.add('user');
+
+         const userAvatar = document.createElement('div');
+         userAvatar.className = 'avatar user-avatar';
+         userAvatar.textContent = 'U';
+
+         const userText = document.createElement('div');
+         userText.className = 'text user-text';
+         userText.textContent = entry.message;
+
+         messageDiv.appendChild(userText);
+         messageDiv.appendChild(userAvatar);
+      } else {
+         messageDiv.classList.add('bot');
+
+         const botAvatar = document.createElement('div');
+         botAvatar.className = 'avatar bot-avatar';
+
+         const botText = document.createElement('div');
+         botText.className = 'text bot-text';
+         botText.textContent = entry.message;
+
+         messageDiv.appendChild(botAvatar);
+         messageDiv.appendChild(botText);
+      }
+
+      return messageDiv;
    });
+
+   const messagesDiv = document.getElementById('messages');
+   initialMessages.forEach((msg) =>
+      messagesDiv.appendChild(msg)
+   );
+
+   scrollToBottom();
 </script>
 
 </html>
