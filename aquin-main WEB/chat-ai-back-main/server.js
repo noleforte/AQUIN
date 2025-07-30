@@ -18,12 +18,14 @@ const allowedOrigins = [
    'https://aquin.vercel.app',
    'https://aquin.xyz',
    'https://loono.boo',
-   'https://ely-lemon.vercel.app' // ← добавляем твой новый домен
+   'https://ely-lemon.vercel.app' // ← ДОБАВЛЕНО
  ];
 
 app.use(
    cors({
       origin: (origin, callback) => {
+         console.log('Request origin:', origin); // Добавь это
+
          if (
             !origin ||
             origin.startsWith('http://localhost') ||
@@ -32,7 +34,8 @@ app.use(
          ) {
             callback(null, true);
          } else {
-            callback(new Error('Not allowed by CORS')); // Запрещено
+            console.log('Blocked by CORS:', origin); // И это
+            callback(new Error('Not allowed by CORS'));
          }
       }
    })
