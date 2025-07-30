@@ -1090,14 +1090,25 @@ header.active {
 }
 .sn_tokenomics .rocket_man {
    position: absolute;
-   width: 40rem;
-   height: 40rem;
-   top: 0;
-   left: -6rem;
+   width: 25rem;
+   height: 25rem;
+   top: 7rem;
+   left: 11.5rem;
    -webkit-animation: rocket_man 2s ease infinite;
    animation: rocket_man 2s ease infinite;
 }
 
+.sn_tokenomics .rocket_man_reflected {
+   position: absolute;
+   width: 25rem;
+   height: 25rem;
+   top: 7rem;
+   right: 11.5rem;
+   -webkit-transform: scaleX(-1);
+   transform: scaleX(-1);
+   -webkit-animation: rocket_man 2s ease infinite;
+   animation: rocket_man 2s ease infinite;
+}
 @-webkit-keyframes rocket_man {
    0% {
       -webkit-transform: translateX(1rem) translateY(1rem);

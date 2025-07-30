@@ -45,6 +45,12 @@
       top: 8rem;
       left: -6rem;
     }
+    .sn_tokenomics .rocket_man_reflected {
+      width: 26rem;
+      height: 26rem;
+      top: 8rem;
+      right: -6rem;
+    }
     .slider_container {
       padding: 3.2rem 3.2rem 8.8rem 3.2rem;
     }
@@ -356,6 +362,13 @@
       height: 10rem;
       top: 7.5rem;
       left: -4rem;
+    }
+    .sn_tokenomics .rocket_man_reflected {
+      position: absolute;
+      width: 10rem;
+      height: 10rem;
+      top: 7.5rem;
+      right: -4rem;
     }
     .sn_tokenomics_content {
       gap: 3rem;
