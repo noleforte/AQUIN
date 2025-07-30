@@ -4,9 +4,9 @@
   "description": "ELY The Coin - The most delightful water droplet in crypto",
   "main": "index.html",
   "scripts": {
-    "dev": "vercel dev",
+    "dev": "echo 'Development server not needed'",
     "build": "echo 'No build step required'",
-    "start": "vercel dev"
+    "start": "echo 'Static site - no start command needed'"
   },
   "keywords": [
     "crypto",
@@ -15,9 +15,5 @@
     "meme-coin"
   ],
   "author": "ELY Team",
-  "license": "MIT",
-  "dependencies": {},
-  "devDependencies": {
-    "vercel": "^latest"
-  }
+  "license": "MIT"
 } 
