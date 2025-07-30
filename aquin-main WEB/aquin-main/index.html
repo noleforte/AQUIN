@@ -355,7 +355,6 @@
                         scrollToBottom();
 
                         try {
-                           // Try local API first, then fallback to frontend
                            const response = await fetch('/api/chat', {
                               method: 'POST',
                               headers: { 'Content-Type': 'application/json' },
@@ -364,14 +363,12 @@
                               })
                            });
 
-                           let botReply;
-                           if (response.ok) {
-                              const data = await response.json();
-                              botReply = data.reply;
-                           } else {
-                              // Fallback to frontend chatbot
-                              botReply = generateElyResponse(userInputValue);
+                           if (!response.ok) {
+                              throw new Error(`API error: ${response.status}`);
                            }
+
+                           const data = await response.json();
+                           const botReply = data.reply;
 
                            messagesDiv.removeChild(botTypingMessage);
                            
@@ -396,98 +393,20 @@
                            saveChatHistory(chatHistory);
                            scrollToBottom();
                         } catch (error) {
-                           // Fallback to frontend chatbot
+                           console.error('Chat error:', error);
+                           
                            messagesDiv.removeChild(botTypingMessage);
                            
-                           const botReply = generateElyResponse(userInputValue);
+                           const errorMessage = document.createElement('div');
+                           errorMessage.className = 'message bot';
+                           errorMessage.innerHTML = '<div class="text bot-text">The connection feels heavy right now. Try again in a moment.</div>';
+                           messagesDiv.appendChild(errorMessage);
                            
-                           const botMessage = document.createElement('div');
-                           botMessage.className = 'message bot';
-
-                           const botAvatar = document.createElement('div');
-                           botAvatar.className = 'avatar bot-avatar';
-
-                           const botText = document.createElement('div');
-                           botText.className = 'text bot-text';
-                           botText.textContent = botReply;
-
-                           botMessage.appendChild(botAvatar);
-                           botMessage.appendChild(botText);
-                           messagesDiv.appendChild(botMessage);
-
-                           chatHistory.push({
-                              message: botReply,
-                              isUser: false
-                           });
-                           saveChatHistory(chatHistory);
                            scrollToBottom();
                         }
                      };
 
-                     // Simple ELY chatbot responses (fallback)
-                     function generateElyResponse(userMessage) {
-                        const message = userMessage.toLowerCase();
-                        
-                        // Greetings
-                        if (message.includes('hello') || message.includes('hi') || message.includes('hey')) {
-                           return "Hello there! I'm ELY, the most delightful water droplet in the crypto world! 💧✨ How can I splash some joy into your day?";
-                        }
-                        
-                        // About ELY
-                        if (message.includes('who are you') || message.includes('what are you') || message.includes('ely')) {
-                           return "I'm ELY, a brave young water droplet who discovered a mysterious hardware wallet floating in the digital streams! I became an accidental oracle, creating waves of joy throughout the blockchain! 🌊💎";
-                        }
-                        
-                        // Price/Chart
-                        if (message.includes('price') || message.includes('chart') || message.includes('value')) {
-                           return "Oh! You want to know about $ELY's magical journey? Check out the chart on DexScreener - it's like watching a beautiful waterfall of possibilities! 📈💧";
-                        }
-                        
-                        // How to buy
-                        if (message.includes('buy') || message.includes('purchase') || message.includes('how to')) {
-                           return "Want to join the ELY family? It's super simple! Get some SOL, head to Jupiter (jup.ag), and swap for $ELY! You'll be part of the most delightful crypto revolution! 🚀💎";
-                        }
-                        
-                        // Community
-                        if (message.includes('community') || message.includes('telegram') || message.includes('twitter')) {
-                           return "Join our amazing community! We're on Telegram and Twitter - just search for LiquiSpirit! We're the friendliest bunch of crypto enthusiasts you'll ever meet! 🌟💬";
-                        }
-                        
-                        // Elypening
-                        if (message.includes('elypening') || message.includes('future')) {
-                           return "The Elypening is coming! It's the prophesied event where joy floods the entire crypto space! Think of it as a bull run, but for happiness! 🌊✨";
-                        }
-                        
-                        // General crypto
-                        if (message.includes('crypto') || message.includes('blockchain') || message.includes('defi')) {
-                           return "Crypto is like a magical ocean of possibilities! And I'm here to make sure everyone can splash around in it! The future is decentralized and delightful! 🌊💫";
-                        }
-                        
-                        // Questions
-                        if (message.includes('?') || message.includes('what') || message.includes('why')) {
-                           const responses = [
-                              "That's a great question! As a water droplet, I believe in the power of curiosity and flow! 💧",
-                              "Hmm, let me think about that... *splashes thoughtfully* The answer lies in the ripples of innovation! 🌊",
-                              "What an interesting thought! In the crypto ocean, every question leads to new discoveries! ✨",
-                              "I love questions! They're like little bubbles of wisdom floating to the surface! 💭"
-                           ];
-                           return responses[Math.floor(Math.random() * responses.length)];
-                        }
-                        
-                        // Default responses
-                        const defaultResponses = [
-                           "Oh, that's fascinating! *splashes excitedly* Tell me more! 💧✨",
-                           "I love your energy! You're making waves in the best way! 🌊",
-                           "That's the spirit! Together we're creating the most delightful crypto ecosystem! 💎",
-                           "You're absolutely right! The future is bright and bubbly! ✨",
-                           "I can feel the positive vibes! Let's make some magical ripples together! 🌟",
-                           "That's what I call thinking outside the droplet! Brilliant! 💧💫",
-                           "You're speaking my language! The language of joy and innovation! 🚀",
-                           "I'm so excited about this conversation! You get it! 💎✨"
-                        ];
-                        
-                        return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
-                     }
+
 
                      const initialMessages = chatHistory.map((entry) => {
                         const messageDiv = document.createElement('div');
