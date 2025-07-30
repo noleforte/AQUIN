@@ -1544,6 +1544,20 @@ header.active {
    right: -4%;
    background-repeat: no-repeat;
 }
+
+.sn_fuq_content .question_items_bg {
+   content: '';
+   width: 40rem;
+   height: 80%;
+   background: url(../img/pic_6.png);
+   background-size: contain;
+   background-position: bottom;
+   position: absolute;
+   bottom: 0;
+   right: -4%;
+   background-repeat: no-repeat;
+   z-index: -1;
+}
 .sn_fuq_content .question_items .question_item {
    -webkit-box-shadow: 0 0 0 0.125rem #0c0d16 inset, 0.125rem 0.25rem 0 0 #000;
    box-shadow: 0 0 0 0.125rem #0c0d16 inset, 0.125rem 0.25rem 0 0 #000;
@@ -1800,5 +1814,75 @@ footer .footer_bloop {
 @media (max-width: 1100px) {
    .sn_about_content::after {
       display: none;
+   }
+}
+@media screen and (max-width: 1680px) {
+   .sn_fuq_content .question_items_bg {
+      right: 1rem;
+   }
+   .sn_fuq_content .question_items::before {
+      right: -4rem;
+   }
+   .sn_tokenomics .rocket_man {
+      left: 1rem !important;
+   }
+   .sn_tokenomics .rocket_man_reflected {
+      right: 6rem !important;
+   }
+}
+/* Медиа-запросы для .sn_fuq_content .question_items_bg */
+@media screen and (max-width: 1440px) {
+   .sn_fuq_content .question_items_bg {
+      right: 1rem;
+   }
+   .sn_fuq_content .question_items::before {
+      right: -4rem;
+   }
+   .sn_tokenomics .rocket_man {
+      left: 1rem !important;
+   }
+   .sn_tokenomics .rocket_man_reflected {
+      right: 6rem !important;
+   }
+}
+
+@media screen and (max-width: 1200px) {
+   .sn_tokenomics .rocket_man {
+      left: 4rem !important;
+   }
+   .sn_tokenomics .rocket_man_reflected {
+      right: 4rem !important;
+   }
+}
+
+@media screen and (max-width: 1024px) {
+   .sn_tokenomics .rocket_man {
+      left: -4rem !important;
+   }
+   .sn_tokenomics .rocket_man_reflected {
+      right: 2rem !important;
+   }
+}
+
+@media screen and (max-width: 1024px) {
+   .sn_fuq_content .question_items_bg {
+      width: 28rem;
+      right: -1rem;
+   }
+}
+
+@media screen and (max-width: 767px) {
+   .sn_fuq_content .question_items_bg {
+      content: "";
+      width: 32rem;
+      height: 30rem;
+      right: initial;
+      left: -6rem;
+   }
+   .sn_tokenomics .rocket_man {
+      display: none !important;
+   }
+   .sn_tokenomics .rocket_man_reflected {
+      display: none !important;
    }
 }

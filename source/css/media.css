@@ -7,6 +7,12 @@
     html {
       font-size: 1.0204081633vw;
     }
+    .sn_fuq_content .question_items::before {
+      right: -3rem;
+    }
+    .sn_fuq_content .question_items_bg {
+      right: -3rem;
+    }
   }
   @media screen and (max-width: 1024px) {
     html {
@@ -79,6 +85,11 @@
     }
     .sn_fuq_content .question_items::before {
       width: 28rem;
+      right: -1rem;
+    }
+    .sn_fuq_content .question_items_bg {
+      width: 28rem;
+      right: -1rem;
     }
     .sn_fuq_content .question_items .question_item {
       max-width: 45rem;
@@ -88,9 +99,10 @@
     header {
       width: 100%;
       position: sticky;
-      top: 1rem;
-      z-index: 100;
-      /* padding: 0 1rem; */
+      top: 0;
+      z-index: 1000;
+      background: transparent;
+      padding: 1rem;
     }
     .menu_mobile_btn {
       display: -webkit-box;
@@ -538,6 +550,14 @@
       width: 32rem;
       height: 30rem;
       right: initial;
+      left: -6rem;
+    }
+    .sn_fuq_content .question_items_bg {
+      content: "";
+      width: 32rem;
+      height: 30rem;
+      right: initial;
+      left: -6rem;
     }
     .sn_fuq_content .question_items .question_item {
       border-radius: 1.4rem;
