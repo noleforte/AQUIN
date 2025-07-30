@@ -11,28 +11,50 @@ const bot1Prompt = JSON.parse(
 );
 
 const app = express();
-const PORT = 4000;
+const PORT = process.env.PORT || 4000;
 const TOKEN = process.env.TOKEN;
 
-const allowedOrigins = ['https://aquin.vercel.app', 'https://aquin.xyz', 'https://loono.boo'];
+// Updated CORS configuration for Render deployment
+const allowedOrigins = [
+   'https://aquin.vercel.app', 
+   'https://aquin.xyz', 
+   'https://loono.boo',
+   'https://aquin-lemon.vercel.app',
+   'http://localhost:3000',
+   'http://localhost:5173',
+   'http://127.0.0.1:3000',
+   'http://127.0.0.1:5173'
+];
 
 app.use(
    cors({
       origin: (origin, callback) => {
+         // Allow requests with no origin (like mobile apps or curl requests)
+         if (!origin) return callback(null, true);
+         
          if (
-            !origin ||
             origin.startsWith('http://localhost') ||
             origin.startsWith('http://127.0.0.1') ||
             allowedOrigins.includes(origin)
          ) {
             callback(null, true);
          } else {
-            callback(new Error('Not allowed by CORS')); // Запрещено
+            console.log('Blocked origin:', origin);
+            callback(new Error('Not allowed by CORS'));
          }
-      }
+      },
+      methods: ['GET', 'POST', 'OPTIONS'],
+      credentials: true,
+      optionsSuccessStatus: 200
    })
 );
+
 app.use(bodyParser.json());
+
+// Add health check endpoint
+app.get('/health', (req, res) => {
+   res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
 
 // Настройка ограничения частоты запросов
 const limiter = rateLimit({
@@ -46,7 +68,10 @@ app.use('/chat', limiter);
 app.post('/chat', async (req, res) => {
    try {
       const { messages } = req.body;
-    //   console.log('message', messages);
+      
+      if (!messages || !Array.isArray(messages)) {
+         return res.status(400).json({ error: 'Invalid messages format' });
+      }
 
       const {
          name,
@@ -150,10 +175,11 @@ app.post('/chat', async (req, res) => {
          res.status(500).json({ error: 'Ошибка при отправке запроса' });
       }
    } catch (error) {
-      console.log('Error');
+      console.error('Server error:', error);
+      res.status(500).json({ error: 'Internal server error' });
    }
 });
 
 app.listen(PORT, () => {
-   console.log(`Server is running on http://localhost:${PORT}`);
+   console.log(`Server is running on port ${PORT}`);
 });
