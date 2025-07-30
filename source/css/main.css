@@ -779,8 +779,8 @@ header.active {
    background-size: contain;
    background-position: right bottom;
    background-repeat: no-repeat;
-   height: 100%;
-   right: 0;
+   height: 95%;
+   right: -10px;
    width: 50rem;
    bottom: 0;
    position: absolute;
