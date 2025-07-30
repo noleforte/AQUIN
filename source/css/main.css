@@ -599,7 +599,7 @@ header.active {
 .sn_hero_content .hero_char {
    max-width: 40rem;
    width: 100%;
-   margin-top: -3rem;
+   margin-top: -1rem;
    -webkit-animation: hero_char 1s ease;
    animation: hero_char 1s ease;
 }
