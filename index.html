@@ -290,119 +290,44 @@
                </style>
 
                <script>
-                  document
-                     .getElementById('user-input')
-                     .addEventListener('keypress', function (event) {
-                        if (event.key === 'Enter') {
-                           sendMessage();
-                        }
-                     });
-
-                  let chatHistory =
-                     JSON.parse(sessionStorage.getItem('chatHistory')) || [];
-
-                  const saveChatHistory = (newHistory) => {
-                     sessionStorage.setItem(
-                        'chatHistory',
-                        JSON.stringify(newHistory)
-                     );
-                  };
-
-                  const scrollToBottom = () => {
-                     const messagesDiv = document.getElementById('messages');
-                     messagesDiv.scrollTop = messagesDiv.scrollHeight;
-                  };
-
-                  async function sendMessage() {
-                     const userInput =
-                        document.getElementById('user-input').value;
-                     if (!userInput.trim()) return;
-
-                     const messagesDiv = document.getElementById('messages');
-                     const userMessage = document.createElement('div');
-                     userMessage.className = 'message user';
-
-                     const userAvatar = document.createElement('div');
-                     userAvatar.className = 'avatar user-avatar';
-                     userAvatar.textContent = 'U';
-
-                     const userText = document.createElement('div');
-                     userText.className = 'text user-text';
-                     userText.textContent = userInput;
-
-                     userMessage.appendChild(userText);
-                     userMessage.appendChild(userAvatar);
-                     messagesDiv.appendChild(userMessage);
-
-                     document.getElementById('user-input').value = '';
-
-                     chatHistory.push({ message: userInput, isUser: true });
-                     saveChatHistory(chatHistory);
-
-                     const botTypingMessage = document.createElement('div');
-                     botTypingMessage.className = 'message bot';
-                     botTypingMessage.innerHTML =
-                        '<div class="text bot-text">ELY is typing...</div>';
-                     messagesDiv.appendChild(botTypingMessage);
-
-                     scrollToBottom();
-
-                     try {
-                        const backendUrl = 'https://chat-ai-back-h9wn.onrender.com/chat';
-                        //'https://aichat-backend-79ip.onrender.com/chat'; //'http://localhost:4000/chat';
-                        const response = await fetch(backendUrl, {
-                           method: 'POST',
-                           headers: { 'Content-Type': 'application/json' },
-                           body: JSON.stringify({
-                              messages: chatHistory.slice(-10)
-                           })
+                  document.addEventListener('DOMContentLoaded', function() {
+                     const userInput = document.getElementById('user-input');
+                     if (userInput) {
+                        userInput.addEventListener('keypress', function (event) {
+                           if (event.key === 'Enter') {
+                              sendMessage();
+                           }
                         });
-
-                        if (!response.ok)
-                           throw new Error(
-                              `Server error: ${response.status}`
-                           );
-
-                        const data = await response.json();
-
-                        messagesDiv.removeChild(botTypingMessage);
-                        const botMessage = document.createElement('div');
-                        botMessage.className = 'message bot';
-
-                        const botAvatar = document.createElement('div');
-                        botAvatar.className = 'avatar bot-avatar';
-
-                        const botText = document.createElement('div');
-                        botText.className = 'text bot-text';
-                        botText.textContent = data.reply || 'No answer';
-
-                        botMessage.appendChild(botAvatar);
-                        botMessage.appendChild(botText);
-                        messagesDiv.appendChild(botMessage);
-
-                        chatHistory.push({
-                           message: data.reply,
-                           isUser: false
-                        });
-                        saveChatHistory(chatHistory);
-                     } catch (error) {
-                        const errorMessage = document.createElement('div');
-                        errorMessage.className = 'message bot';
-                        errorMessage.innerHTML =
-                           '<div class="text bot-text">Error sending</div>';
-                        messagesDiv.appendChild(errorMessage);
-                        console.error('Error:', error);
                      }
 
-                     scrollToBottom();
-                  }
+                     let chatHistory =
+                        JSON.parse(sessionStorage.getItem('chatHistory')) || [];
 
-                  const initialMessages = chatHistory.map((entry) => {
-                     const messageDiv = document.createElement('div');
-                     messageDiv.className = 'message';
+                     const saveChatHistory = (newHistory) => {
+                        sessionStorage.setItem(
+                           'chatHistory',
+                           JSON.stringify(newHistory)
+                        );
+                     };
 
-                     if (entry.isUser) {
-                        messageDiv.classList.add('user');
+                     const scrollToBottom = () => {
+                        const messagesDiv = document.getElementById('messages');
+                        if (messagesDiv) {
+                           messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                        }
+                     };
+
+                     window.sendMessage = async function() {
+                        const userInput = document.getElementById('user-input');
+                        if (!userInput || !userInput.value.trim()) return;
+
+                        const userInputValue = userInput.value;
+                        const messagesDiv = document.getElementById('messages');
+                        
+                        if (!messagesDiv) return;
+
+                        const userMessage = document.createElement('div');
+                        userMessage.className = 'message user';
 
                         const userAvatar = document.createElement('div');
                         userAvatar.className = 'avatar user-avatar';
@@ -410,33 +335,117 @@
 
                         const userText = document.createElement('div');
                         userText.className = 'text user-text';
-                        userText.textContent = entry.message;
+                        userText.textContent = userInputValue;
 
-                        messageDiv.appendChild(userText);
-                        messageDiv.appendChild(userAvatar);
-                     } else {
-                        messageDiv.classList.add('bot');
+                        userMessage.appendChild(userText);
+                        userMessage.appendChild(userAvatar);
+                        messagesDiv.appendChild(userMessage);
 
-                        const botAvatar = document.createElement('div');
-                        botAvatar.className = 'avatar bot-avatar';
+                        userInput.value = '';
 
-                        const botText = document.createElement('div');
-                        botText.className = 'text bot-text';
-                        botText.textContent = entry.message;
+                        chatHistory.push({ message: userInputValue, isUser: true });
+                        saveChatHistory(chatHistory);
 
-                        messageDiv.appendChild(botAvatar);
-                        messageDiv.appendChild(botText);
+                        const botTypingMessage = document.createElement('div');
+                        botTypingMessage.className = 'message bot';
+                        botTypingMessage.innerHTML =
+                           '<div class="text bot-text">ELY is typing...</div>';
+                        messagesDiv.appendChild(botTypingMessage);
+
+                        scrollToBottom();
+
+                        try {
+                           const backendUrl = 'https://chat-ai-back-h9wn.onrender.com/chat';
+                           //'https://aichat-backend-79ip.onrender.com/chat'; //'http://localhost:4000/chat';
+                           const response = await fetch(backendUrl, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                 messages: chatHistory.slice(-10)
+                              })
+                           });
+
+                           if (!response.ok)
+                              throw new Error(
+                                 `Server error: ${response.status}`
+                              );
+
+                           const data = await response.json();
+
+                           messagesDiv.removeChild(botTypingMessage);
+                           const botMessage = document.createElement('div');
+                           botMessage.className = 'message bot';
+
+                           const botAvatar = document.createElement('div');
+                           botAvatar.className = 'avatar bot-avatar';
+
+                           const botText = document.createElement('div');
+                           botText.className = 'text bot-text';
+                           botText.textContent = data.reply || 'No answer';
+
+                           botMessage.appendChild(botAvatar);
+                           botMessage.appendChild(botText);
+                           messagesDiv.appendChild(botMessage);
+
+                           chatHistory.push({
+                              message: data.reply,
+                              isUser: false
+                           });
+                           saveChatHistory(chatHistory);
+                        } catch (error) {
+                           const errorMessage = document.createElement('div');
+                           errorMessage.className = 'message bot';
+                           errorMessage.innerHTML =
+                              '<div class="text bot-text">Error sending</div>';
+                           messagesDiv.appendChild(errorMessage);
+                           console.error('Error:', error);
+                        }
+
+                        scrollToBottom();
+                     };
+
+                     const initialMessages = chatHistory.map((entry) => {
+                        const messageDiv = document.createElement('div');
+                        messageDiv.className = 'message';
+
+                        if (entry.isUser) {
+                           messageDiv.classList.add('user');
+
+                           const userAvatar = document.createElement('div');
+                           userAvatar.className = 'avatar user-avatar';
+                           userAvatar.textContent = 'U';
+
+                           const userText = document.createElement('div');
+                           userText.className = 'text user-text';
+                           userText.textContent = entry.message;
+
+                           messageDiv.appendChild(userText);
+                           messageDiv.appendChild(userAvatar);
+                        } else {
+                           messageDiv.classList.add('bot');
+
+                           const botAvatar = document.createElement('div');
+                           botAvatar.className = 'avatar bot-avatar';
+
+                           const botText = document.createElement('div');
+                           botText.className = 'text bot-text';
+                           botText.textContent = entry.message;
+
+                           messageDiv.appendChild(botAvatar);
+                           messageDiv.appendChild(botText);
+                        }
+
+                        return messageDiv;
+                     });
+
+                     const messagesDiv = document.getElementById('messages');
+                     if (messagesDiv) {
+                        initialMessages.forEach((msg) =>
+                           messagesDiv.appendChild(msg)
+                        );
+                        scrollToBottom();
                      }
-
-                     return messageDiv;
                   });
-
-                  const messagesDiv = document.getElementById('messages');
-                  initialMessages.forEach((msg) =>
-                     messagesDiv.appendChild(msg)
-                  );
-
-                  scrollToBottom();
                </script>
                <!-- <h2 class="scroll_effect">Liqui, the first chaos agent with a heart of gold and a mind full of ripples.</h2>
                     <p class="scroll_effect">LIQUI is not just any crypto mascot. He’s a powerful droplet of laughter, merging financial savvy with a whimsical charm that makes waves. <br><br> Join our lovable troublemaker on his mission
@@ -664,42 +673,43 @@
          'Will Ely succeed in creating his giant, invisible chain of joy? Can he navigate the complexities of crypto without accidentally flooding the entire system? Join the $ELY community and witness the most delightfully disruptive force in crypto.'
       ];
 
-      const dots = document.querySelectorAll('.dot');
-      let currentIndex = 0;
-
-      function updateSlider(index) {
-         if (sliderText) {
-            sliderText.innerText = texts[index];
-         }
-         dots.forEach((dot) => dot.classList.remove('active'));
-         dots[index].classList.add('active');
-      }
-
-      const arrowLeft = document.querySelector('.arrow_left');
-      const arrowRight = document.querySelector('.arrow_right');
-
-      if (arrowLeft) {
-         arrowLeft.addEventListener('click', () => {
-            currentIndex =
-               currentIndex === 0 ? texts.length - 1 : currentIndex - 1;
-            updateSlider(currentIndex);
-         });
-      }
-
-      if (arrowRight) {
-         arrowRight.addEventListener('click', () => {
-            currentIndex =
-               currentIndex === texts.length - 1 ? 0 : currentIndex + 1;
-            updateSlider(currentIndex);
-         });
-      }
-
-      dots.forEach((dot) => {
-         dot.addEventListener('click', () => {
-            currentIndex = parseInt(dot.getAttribute('data-index'));
-            updateSlider(currentIndex);
-         });
-      });
+      // Note: The slider functionality is commented out because the required elements don't exist in the HTML
+      // const dots = document.querySelectorAll('.dot');
+      // let currentIndex = 0;
+      // 
+      // function updateSlider(index) {
+      //    if (sliderText) {
+      //       sliderText.innerText = texts[index];
+      //    }
+      //    dots.forEach((dot) => dot.classList.remove('active'));
+      //    dots[index].classList.add('active');
+      // }
+      // 
+      // const arrowLeft = document.querySelector('.arrow_left');
+      // const arrowRight = document.querySelector('.arrow_right');
+      // 
+      // if (arrowLeft) {
+      //    arrowLeft.addEventListener('click', () => {
+      //       currentIndex =
+      //          currentIndex === 0 ? texts.length - 1 : currentIndex - 1;
+      //       updateSlider(currentIndex);
+      //    });
+      // }
+      // 
+      // if (arrowRight) {
+      //    arrowRight.addEventListener('click', () => {
+      //       currentIndex =
+      //          currentIndex === texts.length - 1 ? 0 : currentIndex + 1;
+      //       updateSlider(currentIndex);
+      //    });
+      // }
+      // 
+      // dots.forEach((dot) => {
+      //    dot.addEventListener('click', () => {
+      //       currentIndex = parseInt(dot.getAttribute('data-index'));
+      //       updateSlider(currentIndex);
+      //    });
+      // });
    });
 </script>
 
