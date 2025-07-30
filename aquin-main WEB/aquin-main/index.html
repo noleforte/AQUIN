@@ -354,8 +354,49 @@
 
                         scrollToBottom();
 
-                        // Simulate typing delay
-                        setTimeout(() => {
+                        try {
+                           // Try local API first, then fallback to frontend
+                           const response = await fetch('/api/chat', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                 messages: chatHistory.slice(-10)
+                              })
+                           });
+
+                           let botReply;
+                           if (response.ok) {
+                              const data = await response.json();
+                              botReply = data.reply;
+                           } else {
+                              // Fallback to frontend chatbot
+                              botReply = generateElyResponse(userInputValue);
+                           }
+
+                           messagesDiv.removeChild(botTypingMessage);
+                           
+                           const botMessage = document.createElement('div');
+                           botMessage.className = 'message bot';
+
+                           const botAvatar = document.createElement('div');
+                           botAvatar.className = 'avatar bot-avatar';
+
+                           const botText = document.createElement('div');
+                           botText.className = 'text bot-text';
+                           botText.textContent = botReply;
+
+                           botMessage.appendChild(botAvatar);
+                           botMessage.appendChild(botText);
+                           messagesDiv.appendChild(botMessage);
+
+                           chatHistory.push({
+                              message: botReply,
+                              isUser: false
+                           });
+                           saveChatHistory(chatHistory);
+                           scrollToBottom();
+                        } catch (error) {
+                           // Fallback to frontend chatbot
                            messagesDiv.removeChild(botTypingMessage);
                            
                            const botReply = generateElyResponse(userInputValue);
@@ -380,10 +421,10 @@
                            });
                            saveChatHistory(chatHistory);
                            scrollToBottom();
-                        }, 1000 + Math.random() * 2000); // Random delay between 1-3 seconds
+                        }
                      };
 
-                     // Simple ELY chatbot responses
+                     // Simple ELY chatbot responses (fallback)
                      function generateElyResponse(userMessage) {
                         const message = userMessage.toLowerCase();
                         

@@ -1,0 +1,23 @@
+{
+  "name": "ely-the-coin",
+  "version": "1.0.0",
+  "description": "ELY The Coin - The most delightful water droplet in crypto",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build step required'",
+    "start": "vercel dev"
+  },
+  "keywords": [
+    "crypto",
+    "ely",
+    "solana",
+    "meme-coin"
+  ],
+  "author": "ELY Team",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "vercel": "^latest"
+  }
+} 
