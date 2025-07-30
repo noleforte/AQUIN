@@ -26,46 +26,28 @@ const allowedOrigins = [
    'http://127.0.0.1:5173'
 ];
 
-// Enable CORS for all routes with more permissive settings
-app.use((req, res, next) => {
-   const origin = req.headers.origin;
-   
-   console.log('Request origin:', origin);
-   console.log('Request method:', req.method);
-   console.log('Request headers:', req.headers);
-   
-   // Always allow the specific domain
-   if (origin === 'https://ely-lemon.vercel.app') {
-      res.header('Access-Control-Allow-Origin', origin);
-   } else if (
-      origin.startsWith('http://localhost') ||
-      origin.startsWith('http://127.0.0.1') ||
-      allowedOrigins.includes(origin)
-   ) {
-      res.header('Access-Control-Allow-Origin', origin);
-   } else if (!origin) {
-      // Allow requests with no origin
-      res.header('Access-Control-Allow-Origin', '*');
-   } else {
-      console.log('Blocked origin:', origin);
-      // For now, allow all origins to debug the issue
-      res.header('Access-Control-Allow-Origin', origin);
-   }
-   
-   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-   res.header('Access-Control-Allow-Headers', 'Content-Type, Accept, Authorization, Origin, X-Requested-With');
-   res.header('Access-Control-Allow-Credentials', 'true');
-   res.header('Access-Control-Max-Age', '86400'); // 24 hours
-   
-   // Handle preflight requests
-   if (req.method === 'OPTIONS') {
-      console.log('Handling OPTIONS request');
-      res.status(200).end();
-      return;
-   }
-   
-   next();
-});
+app.use(
+   cors({
+      origin: (origin, callback) => {
+         // Allow requests with no origin (like mobile apps or curl requests)
+         if (!origin) return callback(null, true);
+         
+         if (
+            origin.startsWith('http://localhost') ||
+            origin.startsWith('http://127.0.0.1') ||
+            allowedOrigins.includes(origin)
+         ) {
+            callback(null, true);
+         } else {
+            console.log('Blocked origin:', origin);
+            callback(new Error('Not allowed by CORS'));
+         }
+      },
+      methods: ['GET', 'POST', 'OPTIONS'],
+      credentials: true,
+      optionsSuccessStatus: 200
+   })
+);
 
 app.use(bodyParser.json());
 
@@ -85,13 +67,9 @@ app.use('/chat', limiter);
 
 app.post('/chat', async (req, res) => {
    try {
-      console.log('Received chat request from:', req.headers.origin);
-      console.log('Request body:', req.body);
-      
       const { messages } = req.body;
       
       if (!messages || !Array.isArray(messages)) {
-         console.error('Invalid messages format:', messages);
          return res.status(400).json({ error: 'Invalid messages format' });
       }
 
@@ -191,21 +169,14 @@ app.post('/chat', async (req, res) => {
          );
 
          const botReply = response.data.choices[0].message.content.trim();
-         console.log('OpenAI response:', botReply);
          res.json({ reply: botReply });
       } catch (error) {
-         console.error('Error fetching from OpenAI:', error.response?.data || error.message);
-         res.status(500).json({ 
-            error: 'Error processing request',
-            details: error.response?.data?.error?.message || error.message 
-         });
+         console.error('Error fetching from OpenAI:', error);
+         res.status(500).json({ error: 'Ошибка при отправке запроса' });
       }
    } catch (error) {
       console.error('Server error:', error);
-      res.status(500).json({ 
-         error: 'Internal server error',
-         details: error.message 
-      });
+      res.status(500).json({ error: 'Internal server error' });
    }
 });
 

@@ -43,7 +43,7 @@
             <a href="https://raydium.io/swap/?inputMint=sol&outputMint=rkZExDEy9ph8UhinSemepkbsiMbDiJz34HtkYZgpump"
                class="link_st_a primary_btn_a_img">
                <div>
-                  <img src="source/img/jupiter-ag-jup-logo.png" alt="Jup icon" />
+                  <img src="source/img/Removal-120.png" alt="Jup icon" />
                </div>
                <span>Buy $ELY</span>
             </a>
@@ -65,7 +65,7 @@
          <a href="https://raydium.io/swap/?inputMint=sol&outputMint=rkZExDEy9ph8UhinSemepkbsiMbDiJz34HtkYZgpump"
             class="link_st_a primary_btn_a_img">
             <div>
-               <img src="source/img/jupiter-ag-jup-logo.png" alt="Jup icon" />
+               <img src="source/img/Removal-120.png" alt="Jup icon" />
             </div>
             <span>Buy $ELY</span>
          </a>
@@ -83,7 +83,7 @@
                   <a href="https://raydium.io/swap/?inputMint=sol&outputMint=rkZExDEy9ph8UhinSemepkbsiMbDiJz34HtkYZgpump"
                      class="primary_btn_a primary_btn_a_img primary_btn_a_img-item">
                      <div>
-                        <img src="source/img/jupiter-ag-jup-logo.png" alt="Jup icon" />
+                        <img src="source/img/Removal-120.png" alt="Jup icon" />
                      </div>
                      <span>Buy $ELY</span>
                   </a>
@@ -290,14 +290,13 @@
                </style>
 
                <script>
-                  const userInput = document.getElementById('user-input');
-                  if (userInput) {
-                     userInput.addEventListener('keypress', function (event) {
+                  document
+                     .getElementById('user-input')
+                     .addEventListener('keypress', function (event) {
                         if (event.key === 'Enter') {
                            sendMessage();
                         }
                      });
-                  }
 
                   let chatHistory =
                      JSON.parse(sessionStorage.getItem('chatHistory')) || [];
@@ -311,9 +310,7 @@
 
                   const scrollToBottom = () => {
                      const messagesDiv = document.getElementById('messages');
-                     if (messagesDiv) {
-                        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-                     }
+                     messagesDiv.scrollTop = messagesDiv.scrollHeight;
                   };
 
                   async function sendMessage() {
@@ -322,11 +319,6 @@
                      if (!userInput.trim()) return;
 
                      const messagesDiv = document.getElementById('messages');
-                     if (!messagesDiv) {
-                        console.error('Messages div not found');
-                        return;
-                     }
-                     
                      const userMessage = document.createElement('div');
                      userMessage.className = 'message user';
 
@@ -356,35 +348,20 @@
                      scrollToBottom();
 
                      try {
-                        // Try local API server first, then Vercel API route
-                        let apiUrl = 'http://localhost:5501/api/chat';
-                        
-                        // Check if we're on localhost (development)
-                        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                           apiUrl = 'http://localhost:5501/api/chat';
-                        } else {
-                           // Production - use Vercel API route
-                           apiUrl = '/api/chat';
-                        }
-                        
-                        const response = await fetch(apiUrl, {
+                        const backendUrl = 'https://chat-ai-back-h9wn.onrender.com/chat';
+                        //'https://aichat-backend-79ip.onrender.com/chat'; //'http://localhost:4000/chat';
+                        const response = await fetch(backendUrl, {
                            method: 'POST',
-                           headers: { 
-                              'Content-Type': 'application/json',
-                              'Accept': 'application/json'
-                           },
+                           headers: { 'Content-Type': 'application/json' },
                            body: JSON.stringify({
                               messages: chatHistory.slice(-10)
                            })
                         });
 
-                        if (!response.ok) {
-                           console.error('Response status:', response.status);
-                           console.error('Response headers:', response.headers);
+                        if (!response.ok)
                            throw new Error(
-                              `Server error: ${response.status} - ${response.statusText}`
+                              `Server error: ${response.status}`
                            );
-                        }
 
                         const data = await response.json();
 
@@ -409,21 +386,12 @@
                         });
                         saveChatHistory(chatHistory);
                      } catch (error) {
-                        console.error('Fetch error details:', error);
-                        
                         const errorMessage = document.createElement('div');
                         errorMessage.className = 'message bot';
-                        
-                        let errorText = 'Sorry, I\'m having trouble connecting right now. Please try again later.';
-                        
-                        if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
-                           errorText = 'Connection error. Please check your internet connection and try again.';
-                        } else if (error.message.includes('Server error')) {
-                           errorText = 'Server is temporarily unavailable. Please try again in a moment.';
-                        }
-                        
-                        errorMessage.innerHTML = `<div class="text bot-text">${errorText}</div>`;
+                        errorMessage.innerHTML =
+                           '<div class="text bot-text">Error sending</div>';
                         messagesDiv.appendChild(errorMessage);
+                        console.error('Error:', error);
                      }
 
                      scrollToBottom();
@@ -464,11 +432,9 @@
                   });
 
                   const messagesDiv = document.getElementById('messages');
-                  if (messagesDiv) {
-                     initialMessages.forEach((msg) =>
-                        messagesDiv.appendChild(msg)
-                     );
-                  }
+                  initialMessages.forEach((msg) =>
+                     messagesDiv.appendChild(msg)
+                  );
 
                   scrollToBottom();
                </script>
@@ -514,7 +480,7 @@
                   <a href="https://raydium.io/swap/?inputMint=sol&outputMint=rkZExDEy9ph8UhinSemepkbsiMbDiJz34HtkYZgpump"
                      class="primary_btn_a primary_btn_a_img">
                      <div>
-                        <img src="source/img/jupiter-ag-jup-logo.png" alt="Jup icon" />
+                        <img src="source/img/Removal-120.png" alt="Jup icon" />
                      </div>
                      <span>Buy $ELY</span>
                   </a>
@@ -670,7 +636,7 @@
                   <a href="https://raydium.io/swap/?inputMint=sol&outputMint=rkZExDEy9ph8UhinSemepkbsiMbDiJz34HtkYZgpump"
                      class="primary_btn_a primary_btn_a_img">
                      <div>
-                        <img src="source/img/jupiter-ag-jup-logo.png" alt="Jup icon" />
+                        <img src="source/img/Removal-120.png" alt="Jup icon" />
                      </div>
                      <span>GET $ELY TODAY</span>
                   </a>
@@ -706,24 +672,17 @@
       dots[index].classList.add('active');
    }
 
-   const arrowLeft = document.querySelector('.arrow_left');
-   const arrowRight = document.querySelector('.arrow_right');
-   
-   if (arrowLeft) {
-      arrowLeft.addEventListener('click', () => {
-         currentIndex =
-            currentIndex === 0 ? texts.length - 1 : currentIndex - 1;
-         updateSlider(currentIndex);
-      });
-   }
+   document.querySelector('.arrow_left').addEventListener('click', () => {
+      currentIndex =
+         currentIndex === 0 ? texts.length - 1 : currentIndex - 1;
+      updateSlider(currentIndex);
+   });
 
-   if (arrowRight) {
-      arrowRight.addEventListener('click', () => {
-         currentIndex =
-            currentIndex === texts.length - 1 ? 0 : currentIndex + 1;
-         updateSlider(currentIndex);
-      });
-   }
+   document.querySelector('.arrow_right').addEventListener('click', () => {
+      currentIndex =
+         currentIndex === texts.length - 1 ? 0 : currentIndex + 1;
+      updateSlider(currentIndex);
+   });
 
    dots.forEach((dot) => {
       dot.addEventListener('click', () => {
@@ -737,8 +696,6 @@
    window.addEventListener('scroll', function () {
       const comixScroll = document.querySelector('.moving_comix_scroll');
       const comixContent = document.querySelector('.moving_comix_content');
-
-      if (!comixScroll || !comixContent) return;
 
       const scrollTop = window.scrollY;
       const windowHeight = window.innerHeight;
@@ -767,9 +724,9 @@
 </script>
 
 <script>
-   const copyButton = document.getElementById('CopyButton');
-   if (copyButton) {
-      copyButton.addEventListener('click', function () {
+   document
+      .getElementById('CopyButton')
+      .addEventListener('click', function () {
          const copyText = document.getElementById('CopyText').innerText;
 
          navigator.clipboard
@@ -787,7 +744,6 @@
                console.error('Error when copying text', error);
             });
       });
-   }
 </script>
 
 <script>
