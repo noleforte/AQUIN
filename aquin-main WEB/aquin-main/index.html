@@ -356,39 +356,17 @@
                      scrollToBottom();
 
                      try {
-                        // Try direct connection first
-                        let backendUrl = 'https://chat-ai-back-h9wn.onrender.com/chat';
-                        let response;
-                        
-                        try {
-                           response = await fetch(backendUrl, {
-                              method: 'POST',
-                              headers: { 
-                                 'Content-Type': 'application/json',
-                                 'Accept': 'application/json'
-                              },
-                              mode: 'cors',
-                              body: JSON.stringify({
-                                 messages: chatHistory.slice(-10)
-                              })
-                           });
-                        } catch (directError) {
-                           console.log('Direct connection failed, trying CORS proxy...');
-                           // Fallback to CORS proxy
-                           const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-                           backendUrl = proxyUrl + 'https://chat-ai-back-h9wn.onrender.com/chat';
-                           
-                           response = await fetch(backendUrl, {
-                              method: 'POST',
-                              headers: { 
-                                 'Content-Type': 'application/json',
-                                 'Accept': 'application/json'
-                              },
-                              body: JSON.stringify({
-                                 messages: chatHistory.slice(-10)
-                              })
-                           });
-                        }
+                        // Use Vercel API route to avoid CORS issues
+                        const response = await fetch('/api/chat', {
+                           method: 'POST',
+                           headers: { 
+                              'Content-Type': 'application/json',
+                              'Accept': 'application/json'
+                           },
+                           body: JSON.stringify({
+                              messages: chatHistory.slice(-10)
+                           })
+                        });
 
                         if (!response.ok) {
                            console.error('Response status:', response.status);
