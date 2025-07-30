@@ -141,9 +141,13 @@ const botPrompt = {
 
 app.post('/api/chat', async (req, res) => {
   try {
+    console.log('=== CHAT REQUEST RECEIVED ===');
+    console.log('Request body:', req.body);
+    
     const { messages } = req.body;
     
     if (!messages || !Array.isArray(messages)) {
+      console.error('Invalid messages format:', messages);
       return res.status(400).json({ error: 'Invalid messages format' });
     }
 
@@ -153,8 +157,28 @@ app.post('/api/chat', async (req, res) => {
       console.error('OpenAI API key not found in environment variables');
       return res.status(500).json({ error: 'OpenAI API key not configured' });
     }
+    
+    console.log('OpenAI API key found:', openaiApiKey.substring(0, 10) + '...');
 
-    // Clean and format messages for OpenAI
+    // Extract bot prompt data (same as original server.js)
+    const {
+      name,
+      clients,
+      modelProvider,
+      settings,
+      plugins,
+      bio,
+      lore,
+      knowledge,
+      messageExamples,
+      postExamples,
+      topics,
+      style,
+      adjectives,
+      restrictions
+    } = botPrompt;
+
+    // Очищаем HTML-теги из всех сообщений (same as original)
     const cleanedMessages = messages.map((msg) =>
       msg.message
         .replace(/<.*?>/g, '')
@@ -162,7 +186,7 @@ app.post('/api/chat', async (req, res) => {
         .trim()
     );
 
-    // Convert messages to OpenAI format
+    // Конвертируем сообщения в формат OpenAI API (same as original)
     const chatHistory = [];
     for (let i = 0; i < cleanedMessages.length; i++) {
       if (i % 2 === 0) {
@@ -175,43 +199,56 @@ app.post('/api/chat', async (req, res) => {
       }
     }
 
-    // Limit history to last 10 messages
+    // Ограничиваем историю (same as original)
     const trimmedHistory = chatHistory.slice(-10);
 
-    // Create system prompt with full bot configuration
-    const systemPrompt = `
-You are ELY, a gentle and uplifting AI assistant in the crypto space.
-
-Character Overview:
-- Name: ${botPrompt.name}
-- Bio: ${botPrompt.bio.join(' ')}
-- Lore: ${botPrompt.lore.join(' ')}
-- Knowledge: ${botPrompt.knowledge.join(', ')}
-- Topics: ${botPrompt.topics.join(', ')}
-- Adjectives: ${botPrompt.adjectives.join(', ')}
-- Style: ${botPrompt.style.all.join(', ')}
-- Chat Style: ${botPrompt.style.chat.join(', ')}
-- Post Style: ${botPrompt.style.post.join(', ')}
-- Restrictions: ${botPrompt.restrictions.join(', ')}
-
-Message Examples:
-${botPrompt.messageExamples.map(example => 
-  `${example[0].content.text} → ${example[1].content.text}`
-).join('\n')}
-
-Post Examples:
-${botPrompt.postExamples.join('\n')}
-
-Always respond in a calm, gentle tone. Keep responses short (1-2 sentences) and thoughtful. Never use emojis or visual decorations. Focus on being supportive and uplifting while maintaining the peaceful, cloud-like essence of ELY.
-`;
-
-    // Prepare messages for OpenAI
+    // Create system prompt (same format as original server.js)
     const promptMessages = [
-      { role: 'system', content: systemPrompt },
-      ...trimmedHistory
+      {
+        role: 'system',
+        content: `
+      Character Overview:
+      - Name: ${name}
+      - Clients: ${clients.join(', ') || 'None'}
+      - Model Provider: ${modelProvider}
+      - Plugins: ${plugins.join(', ') || 'None'}
+      - Settings:
+        - Secrets: ${JSON.stringify(settings.secrets)}
+        - Voice Model: ${settings.voice.model}
+      - Bio: ${bio.join(', ')}
+      - Lore: ${lore.join(', ')}
+      - Knowledge: ${knowledge.join(', ')}
+      - Topics: ${topics.join(', ')}
+      - Adjectives: ${adjectives.join(', ')}
+      - Restrictions: ${restrictions.join(', ')}
+      - General Style: ${style.all.join(', ')}
+      - Chat Style: ${style.chat.join(', ')}
+      - Post Style: ${style.post.join(', ')}
+
+      Message Examples:
+      ${messageExamples
+        .map(
+          (example) =>
+            `- ${example
+              .map((msg) => `${msg.user}: ${msg.content.text}`)
+              .join('\n')}`
+        )
+        .join('\n\n')}
+
+      Post Examples:
+      ${postExamples.map((post) => `- ${post}`).join('\n')}
+      `
+      },
+      ...trimmedHistory // Добавляем очищенную историю
     ];
 
-    // Call OpenAI API directly
+    console.log('=== SENDING TO OPENAI ===');
+    console.log('OpenAI request payload:', JSON.stringify({
+      model: 'gpt-3.5-turbo',
+      messages: promptMessages
+    }, null, 2));
+    
+    // Call OpenAI API directly (same as original server.js)
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -220,9 +257,7 @@ Always respond in a calm, gentle tone. Keep responses short (1-2 sentences) and 
       },
       body: JSON.stringify({
         model: 'gpt-3.5-turbo',
-        messages: promptMessages,
-        max_tokens: 150,
-        temperature: 0.7
+        messages: promptMessages
       })
     });
 
@@ -238,7 +273,11 @@ Always respond in a calm, gentle tone. Keep responses short (1-2 sentences) and 
     const data = await response.json();
     const botReply = data.choices[0].message.content.trim();
     
-    console.log('OpenAI response:', botReply);
+    console.log('=== OPENAI RESPONSE ===');
+    console.log('OpenAI response data:', JSON.stringify(data, null, 2));
+    console.log('ELY reply:', botReply);
+    console.log('=== END CHAT REQUEST ===\n');
+    
     res.json({ reply: botReply });
   } catch (error) {
     console.error('Server error:', error);
