@@ -1,4 +1,7 @@
-export default async function handler(req, res) {
+// Load environment variables
+require('dotenv').config();
+
+module.exports = async function handler(req, res) {
    // Enable CORS
    res.setHeader('Access-Control-Allow-Origin', '*');
    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -16,6 +19,9 @@ export default async function handler(req, res) {
    }
 
    try {
+      console.log('Chat API called:', req.method, req.url);
+      console.log('Request body:', req.body);
+      
       const { messages } = req.body;
       
       // Check if OpenAI API key is available
