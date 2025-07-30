@@ -355,15 +355,39 @@
                         scrollToBottom();
 
                         try {
-                           const backendUrl = 'https://chat-ai-back-h9wn.onrender.com/chat';
-                           //'https://aichat-backend-79ip.onrender.com/chat'; //'http://localhost:4000/chat';
-                           const response = await fetch(backendUrl, {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({
-                                 messages: chatHistory.slice(-10)
-                              })
-                           });
+                           // Try multiple backend URLs in case of CORS issues
+                           const backendUrls = [
+                              '/api/proxy', // Local proxy
+                              'https://chat-ai-back-h9wn.onrender.com/chat',
+                              'https://cors-anywhere.herokuapp.com/https://chat-ai-back-h9wn.onrender.com/chat'
+                           ];
+                           
+                           let response = null;
+                           let lastError = null;
+                           
+                           for (const backendUrl of backendUrls) {
+                              try {
+                                 response = await fetch(backendUrl, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                       messages: chatHistory.slice(-10)
+                                    })
+                                 });
+                                 
+                                 if (response.ok) {
+                                    break; // Success, exit loop
+                                 }
+                              } catch (error) {
+                                 lastError = error;
+                                 console.log(`Failed to fetch from ${backendUrl}:`, error);
+                                 continue; // Try next URL
+                              }
+                           }
+                           
+                           if (!response || !response.ok) {
+                              throw lastError || new Error('All backend URLs failed');
+                           }
 
                            if (!response.ok)
                               throw new Error(
