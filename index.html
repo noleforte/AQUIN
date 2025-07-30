@@ -696,22 +696,33 @@
    let currentIndex = 0;
 
    function updateSlider(index) {
-      sliderText.innerText = texts[index];
+      if (sliderText) {
+         sliderText.innerText = texts[index];
+      }
       dots.forEach((dot) => dot.classList.remove('active'));
-      dots[index].classList.add('active');
+      if (dots[index]) {
+         dots[index].classList.add('active');
+      }
    }
 
-   document.querySelector('.arrow_left').addEventListener('click', () => {
-      currentIndex =
-         currentIndex === 0 ? texts.length - 1 : currentIndex - 1;
-      updateSlider(currentIndex);
-   });
+   const arrowLeft = document.querySelector('.arrow_left');
+   const arrowRight = document.querySelector('.arrow_right');
 
-   document.querySelector('.arrow_right').addEventListener('click', () => {
-      currentIndex =
-         currentIndex === texts.length - 1 ? 0 : currentIndex + 1;
-      updateSlider(currentIndex);
-   });
+   if (arrowLeft) {
+      arrowLeft.addEventListener('click', () => {
+         currentIndex =
+            currentIndex === 0 ? texts.length - 1 : currentIndex - 1;
+         updateSlider(currentIndex);
+      });
+   }
+
+   if (arrowRight) {
+      arrowRight.addEventListener('click', () => {
+         currentIndex =
+            currentIndex === texts.length - 1 ? 0 : currentIndex + 1;
+         updateSlider(currentIndex);
+      });
+   }
 
    dots.forEach((dot) => {
       dot.addEventListener('click', () => {
@@ -726,28 +737,30 @@
       const comixScroll = document.querySelector('.moving_comix_scroll');
       const comixContent = document.querySelector('.moving_comix_content');
 
-      const scrollTop = window.scrollY;
-      const windowHeight = window.innerHeight;
-      const comixScrollTop =
-         comixScroll.getBoundingClientRect().top + scrollTop;
-      const comixHeight = comixScroll.offsetHeight;
+      if (comixScroll && comixContent) {
+         const scrollTop = window.scrollY;
+         const windowHeight = window.innerHeight;
+         const comixScrollTop =
+            comixScroll.getBoundingClientRect().top + scrollTop;
+         const comixHeight = comixScroll.offsetHeight;
 
-      if (
-         scrollTop + windowHeight > comixScrollTop &&
-         scrollTop < comixScrollTop + comixHeight
-      ) {
-         const scrollPercentage =
-            (scrollTop + windowHeight - comixScrollTop) /
-            (windowHeight + comixHeight);
+         if (
+            scrollTop + windowHeight > comixScrollTop &&
+            scrollTop < comixScrollTop + comixHeight
+         ) {
+            const scrollPercentage =
+               (scrollTop + windowHeight - comixScrollTop) /
+               (windowHeight + comixHeight);
 
-         const maxTranslate =
-            comixContent.scrollWidth - comixScroll.offsetWidth;
-         const translateX = Math.min(
-            maxTranslate,
-            maxTranslate * scrollPercentage
-         );
+            const maxTranslate =
+               comixContent.scrollWidth - comixScroll.offsetWidth;
+            const translateX = Math.min(
+               maxTranslate,
+               maxTranslate * scrollPercentage
+            );
 
-         comixContent.style.transform = `translateX(-${translateX}px)`;
+            comixContent.style.transform = `translateX(-${translateX}px)`;
+         }
       }
    });
 </script>
