@@ -1535,13 +1535,13 @@ header.active {
 .sn_fuq_content .question_items::before {
    content: '';
    width: 40rem;
-   height: 85%;
+   height: 80%;
    background: url(../img/pic_6.png);
    background-size: contain;
    background-position: bottom;
    position: absolute;
    bottom: 0;
-   right: 0;
+   right: -4%;
    background-repeat: no-repeat;
 }
 .sn_fuq_content .question_items .question_item {
