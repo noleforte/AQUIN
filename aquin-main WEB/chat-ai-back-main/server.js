@@ -14,7 +14,12 @@ const app = express();
 const PORT = 4000;
 const TOKEN = process.env.TOKEN;
 
-const allowedOrigins = ['https://aquin.vercel.app', 'https://aquin.xyz', 'https://loono.boo', '*'];
+const allowedOrigins = [
+   'https://aquin.vercel.app',
+   'https://aquin.xyz',
+   'https://loono.boo',
+   'https://ely-lemon.vercel.app' // ← добавляем твой новый домен
+ ];
 
 app.use(
    cors({
